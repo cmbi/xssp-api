@@ -23,8 +23,8 @@ def create_app(settings=None):
     app.logger
 
     # Register blueprints
-    from xssp_rest.views import bp as xssp_bp
-    app.register_blueprint(xssp_bp)
+    from xssp_rest.frontend.api.endpoints import bp as api_bp
+    app.register_blueprint(api_bp)
 
     return app
 
