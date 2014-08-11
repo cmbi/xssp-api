@@ -32,7 +32,7 @@ This mode always deploys the `master` branch.
 The methods available in the API are documented below. Note that all parameters
 and response are in JSON.
 
-**`/create/dssp/from_pdb/` (POST)**
+**`/api/create/dssp/from_pdb/` (POST)**
 
 Submits a job to produce DSSP content from PDB content. On success a job id is
 returned which can be used in subsequent API calls.
@@ -45,7 +45,7 @@ returned which can be used in subsequent API calls.
     * `id`: The id of the job
   * Failure (400)
 
-**`/create/hssp/from_pdb/` (POST)**
+**`/api/create/hssp/from_pdb/` (POST)**
 
 Submits a job to produce HSSP content from PDB content. On success a job id is
 returned which can be used in subsequent API calls.
@@ -58,7 +58,7 @@ returned which can be used in subsequent API calls.
     * `id`: The id of the job
   * Failure (400)
 
-**`/create/hssp/from_sequence/` (POST)**
+**`/api/create/hssp/from_sequence/` (POST)**
 
 Submits a job to produce HSSP content from a protein sequence. On success a job
 id is returned which can be used in subsequent API calls.
@@ -71,7 +71,7 @@ id is returned which can be used in subsequent API calls.
     * `id`: The id of the job
   * Failure (400)
 
-**`/job/<job_type>/<job_id>/status/` (GET)**
+**`/api/job/<job_type>/<job_id>/status/` (GET)**
 
 Gets the status of a previous job submission.
 
@@ -85,7 +85,7 @@ Gets the status of a previous job submission.
     * `status`: One of the [celery tasks status values][5].
   * Failure (400)
 
-**`/job/<job_type>/<job_id>/result/` (GET)**
+**`/api/job/<job_type>/<job_id>/result/` (GET)**
 
 Gets the results of a previous job submission.
 
