@@ -9,14 +9,14 @@ import requests
 import time
 
 
-XSSP_REST_URL_BASE = 'http://127.0.0.1:8013/'
+XSSP_REST_URL_BASE = 'http://127.0.0.1:5000/'
 
 
 def pdb_to_hssp(pdb_file_path):
     with open(pdb_file_path) as pdb_file:
         pdb_content = pdb_file.read()
 
-    r = requests.post(XSSP_REST_URL_BASE + 'create/hssp/from_pdb/',
+    r = requests.post(XSSP_REST_URL_BASE + 'api/create/hssp/from_pdb/',
                       data={'pdb_content': pdb_content})
     r.raise_for_status()
     job_id = json.loads(r.text)['id']
@@ -25,7 +25,7 @@ def pdb_to_hssp(pdb_file_path):
     ready = False
     while not ready:
         r = requests.get(XSSP_REST_URL_BASE +
-                         'job/hssp_from_pdb/{}/status/'.format(job_id))
+                         'api/job/hssp_from_pdb/{}/status/'.format(job_id))
         r.raise_for_status()
 
         status = json.loads(r.text)['status']
@@ -36,7 +36,7 @@ def pdb_to_hssp(pdb_file_path):
             time.sleep(5)
     else:
         r = requests.get(XSSP_REST_URL_BASE +
-                         'job/hssp_from_pdb/{}/result/'.format(job_id))
+                         'api/job/hssp_from_pdb/{}/result/'.format(job_id))
         r.raise_for_status()
         result = json.loads(r.text)['result']
         return result
