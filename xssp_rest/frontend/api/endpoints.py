@@ -6,7 +6,7 @@ from flask.json import jsonify
 
 _log = logging.getLogger(__name__)
 
-bp = Blueprint('xssp', __name__)
+bp = Blueprint('xssp', __name__, url_prefix='/api')
 
 
 @bp.route('/create/dssp/from_pdb/', methods=['POST'])
