@@ -3,6 +3,8 @@ import logging
 from flask import Blueprint, request
 from flask.json import jsonify
 
+from xssp_rest.services.xssp import create_dssp, create_hssp
+
 
 _log = logging.getLogger(__name__)
 
@@ -11,41 +13,20 @@ bp = Blueprint('xssp', __name__, url_prefix='/api')
 
 @bp.route('/create/dssp/from_pdb/', methods=['POST'])
 def create_dssp_from_pdb():
-    _log.info("Submitting task to create DSSP from PDB content")
-
-    from xssp_rest.tasks import mkdssp_from_pdb
-    pdb_content = request.form['pdb_content']
-    result = mkdssp_from_pdb.delay(pdb_content)
-
-    # Respond with a 202 (Accepted) and send the job id.
-    _log.info("Task created with id '{}'".format(result.id))
-    return jsonify({'id': result.id}), 202
+    celery_id = create_dssp('pdb', request.form['pdb_content'])
+    return jsonify({'id': celery_id}), 202
 
 
 @bp.route('/create/hssp/from_pdb/', methods=['POST'])
 def create_hssp_from_pdb():
-    _log.info("Submitting task to create HSSP from PDB content")
-
-    from xssp_rest.tasks import mkhssp_from_pdb
-    pdb_content = request.form['pdb_content']
-    result = mkhssp_from_pdb.delay(pdb_content)
-
-    # Respond with a 202 (Accepted) and send the job id.
-    _log.info("Task created with id '{}'".format(result.id))
-    return jsonify({'id': result.id}), 202
+    celery_id = create_hssp('pdb', request.form['pdb_content'])
+    return jsonify({'id': celery_id}), 202
 
 
 @bp.route('/create/hssp/from_sequence/', methods=['POST'])
 def create_hssp_from_sequence():
-    _log.info("Submitting task to create HSSP from a sequence")
-
-    from xssp_rest.tasks import mkhssp_from_sequence
-    sequence = request.form['sequence']
-    result = mkhssp_from_sequence.delay(sequence)
-
-    # Respond with a 202 (Accepted) and send the job id.
-    _log.info("Task created with id '{}'".format(result.id))
-    return jsonify({'id': result.id}), 202
+    celery_id = create_hssp('seq', request.form['sequence'])
+    return jsonify({'id': celery_id}), 202
 
 
 @bp.route('/job/<job_type>/<celery_id>/status/', methods=['GET'])

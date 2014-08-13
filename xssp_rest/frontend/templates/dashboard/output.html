@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="panel panel-default">
+  <div class="panel-heading">Result</div>
+  <div class="panel-body">
+    <p>
+      Please wait while your request is processed. This can take a long time.
+      The status of your request is shown below.
+    </p>
+    <div class="form-group">
+      <span class="label label-default" id="status">QUEUED</span>
+    </div>
+    <textarea class="form-control" id="output" style="font-family: monospace;"
+      rows=30 readonly></textarea>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+  $(document).ready(function() {
+      var intervalId = setInterval(function(){
+        $.getJSON(
+          "/api/job/{{ method }}/{{ celery_id }}/status/",
+          function(data) {
+            $('#status').text(data['status']);
+
+            if (data['status'] == 'PENDING') {
+              $('#status').removeClass("label-default")
+                          .addClass("label-info");
+            }
+
+            if (data['status'] == 'FAILURE') {
+              clearInterval(intervalId);
+              $('#status').removeClass("label-default label-info")
+                          .addClass("label-danger");
+            }
+
+            if (data['status'] == 'SUCCESS') {
+              clearInterval(intervalId);
+              $('#status').removeClass("label-default label-info")
+                          .addClass("label-success");
+              $.getJSON(
+                "/api/job/{{ method }}/{{ celery_id }}/result/",
+                function(data) {
+                  $('#output').text(data['result']);
+                });
+            }
+          }
+        )}, 10000);
+  });
+</script>
+{% endblock %}
