@@ -32,6 +32,10 @@ def create_app(settings=None):
     from xssp_rest import toolbar
     toolbar.init_app(app)
 
+    # Register jinja2 filters
+    from xssp_rest.frontend.filters import beautify_docstring
+    app.jinja_env.filters['beautify_docstring'] = beautify_docstring
+
     # Register blueprints
     from xssp_rest.frontend.api.endpoints import bp as api_bp
     from xssp_rest.frontend.dashboard.views import bp as dashboard_bp
