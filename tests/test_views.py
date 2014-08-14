@@ -59,6 +59,7 @@ class TestViews(object):
 
     @patch('xssp_rest.tasks.mkdssp_from_pdb.AsyncResult')
     def test_get_job_status_for_dssp_from_pdb(self, mock_result):
+        mock_result.return_value.failed.return_value = False
         mock_result.return_value.status = 'SUCCESS'
         rv = self.app.get('/api/job/dssp_from_pdb/12345/status/')
         eq_(rv.status_code, 200)
@@ -68,6 +69,7 @@ class TestViews(object):
 
     @patch('xssp_rest.tasks.mkhssp_from_pdb.AsyncResult')
     def test_get_job_status_for_hssp_from_pdb(self, mock_result):
+        mock_result.return_value.failed.return_value = False
         mock_result.return_value.status = 'SUCCESS'
         rv = self.app.get('/api/job/hssp_from_pdb/12345/status/')
         eq_(rv.status_code, 200)
@@ -77,12 +79,26 @@ class TestViews(object):
 
     @patch('xssp_rest.tasks.mkhssp_from_sequence.AsyncResult')
     def test_get_job_status_for_hssp_from_sequence(self, mock_result):
+        mock_result.return_value.failed.return_value = False
         mock_result.return_value.status = 'SUCCESS'
         rv = self.app.get('/api/job/hssp_from_sequence/12345/status/')
         eq_(rv.status_code, 200)
         response = json.loads(rv.data)
         ok_('status' in response)
         eq_(response['status'], 'SUCCESS')
+
+    @patch('xssp_rest.tasks.mkhssp_from_sequence.AsyncResult')
+    def test_get_job_status_failed_message(self, mock_result):
+        mock_result.return_value.failed.return_value = True
+        mock_result.return_value.status = 'FAILED'
+        mock_result.return_value.traceback = 'Error message'
+        rv = self.app.get('/api/job/hssp_from_sequence/12345/status/')
+        eq_(rv.status_code, 200)
+        response = json.loads(rv.data)
+        ok_('status' in response)
+        eq_(response['status'], 'FAILED')
+        ok_('message' in response)
+        eq_(response['message'], 'Error message')
 
     def test_get_job_status_for_unknown_job_type(self):
         rv = self.app.get('/api/job/unknown/12345/status/')

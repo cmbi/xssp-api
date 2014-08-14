@@ -64,16 +64,19 @@ def get_xssp_status(job_type, id):
 
     if job_type == 'dssp_from_pdb':
         from xssp_rest.tasks import mkdssp_from_pdb
-        response = {'status': mkdssp_from_pdb.AsyncResult(id).status}
+        async_result = mkdssp_from_pdb.AsyncResult(id)
     elif job_type == 'hssp_from_pdb':
         from xssp_rest.tasks import mkhssp_from_pdb
-        response = {'status': mkhssp_from_pdb.AsyncResult(id).status}
+        async_result = mkhssp_from_pdb.AsyncResult(id)
     elif job_type == 'hssp_from_sequence':
         from xssp_rest.tasks import mkhssp_from_sequence
-        response = {'status':
-                    mkhssp_from_sequence.AsyncResult(id).status}
+        async_result = mkhssp_from_sequence.AsyncResult(id)
     else:
         return '', 400
+
+    response = {'status': async_result.status}
+    if async_result.failed():
+        response.update({'message': async_result.traceback})
     return jsonify(response)
 
 

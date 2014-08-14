@@ -37,6 +37,7 @@
               clearInterval(intervalId);
               $('#status').removeClass("label-default label-info")
                           .addClass("label-danger");
+              $('#output').text(data['message']);
             }
 
             if (data['status'] == 'SUCCESS') {
