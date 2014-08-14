@@ -83,6 +83,7 @@ Gets the status of a previous job submission.
 * Responses
   * Success (200)
     * `status`: One of the [celery tasks status values][5].
+    * `message`: The reason if the status indicates a failure.
   * Failure (400)
 
 **`/api/job/<job_type>/<job_id>/result/` (GET)**
