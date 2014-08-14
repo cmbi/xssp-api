@@ -1,4 +1,6 @@
+import inspect
 import json
+import re
 
 from mock import patch
 from nose.tools import eq_, ok_
@@ -57,6 +59,7 @@ class TestViews(object):
 
     @patch('xssp_rest.tasks.mkdssp_from_pdb.AsyncResult')
     def test_get_job_status_for_dssp_from_pdb(self, mock_result):
+        mock_result.return_value.failed.return_value = False
         mock_result.return_value.status = 'SUCCESS'
         rv = self.app.get('/api/job/dssp_from_pdb/12345/status/')
         eq_(rv.status_code, 200)
@@ -66,6 +69,7 @@ class TestViews(object):
 
     @patch('xssp_rest.tasks.mkhssp_from_pdb.AsyncResult')
     def test_get_job_status_for_hssp_from_pdb(self, mock_result):
+        mock_result.return_value.failed.return_value = False
         mock_result.return_value.status = 'SUCCESS'
         rv = self.app.get('/api/job/hssp_from_pdb/12345/status/')
         eq_(rv.status_code, 200)
@@ -75,12 +79,26 @@ class TestViews(object):
 
     @patch('xssp_rest.tasks.mkhssp_from_sequence.AsyncResult')
     def test_get_job_status_for_hssp_from_sequence(self, mock_result):
+        mock_result.return_value.failed.return_value = False
         mock_result.return_value.status = 'SUCCESS'
         rv = self.app.get('/api/job/hssp_from_sequence/12345/status/')
         eq_(rv.status_code, 200)
         response = json.loads(rv.data)
         ok_('status' in response)
         eq_(response['status'], 'SUCCESS')
+
+    @patch('xssp_rest.tasks.mkhssp_from_sequence.AsyncResult')
+    def test_get_job_status_failed_message(self, mock_result):
+        mock_result.return_value.failed.return_value = True
+        mock_result.return_value.status = 'FAILED'
+        mock_result.return_value.traceback = 'Error message'
+        rv = self.app.get('/api/job/hssp_from_sequence/12345/status/')
+        eq_(rv.status_code, 200)
+        response = json.loads(rv.data)
+        ok_('status' in response)
+        eq_(response['status'], 'FAILED')
+        ok_('message' in response)
+        eq_(response['message'], 'Error message')
 
     def test_get_job_status_for_unknown_job_type(self):
         rv = self.app.get('/api/job/unknown/12345/status/')
@@ -116,3 +134,22 @@ class TestViews(object):
     def test_get_job_result_for_unknown_job_type(self):
         rv = self.app.get('/api/job/unknown/12345/result/')
         eq_(rv.status_code, 400)
+
+    def test_api_doc(self):
+        from xssp_rest.frontend.api import endpoints
+
+        rv = self.app.get('/api/')
+        eq_(rv.status_code, 200)
+
+        excluded_fs = ['api_doc']
+        for f_name, f in inspect.getmembers(endpoints, inspect.isfunction):
+            mod_name = inspect.getmodule(f).__name__
+            if "xssp_rest.frontend.api.endpoints" in mod_name and \
+               f_name not in excluded_fs:
+                src = inspect.getsourcelines(f)
+                rx = r"@bp\.route\('([\w\/<>]*)', methods=\['([A-Z]*)']\)"
+                m = re.search(rx, src[0][0])
+                url = m.group(1)
+                url = url.replace('>', '&gt;')
+                url = url.replace('<', '&lt;')
+                assert "<samp>/api{}</samp>".format(url) in rv.data

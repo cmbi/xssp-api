@@ -10,7 +10,8 @@ _log = logging.getLogger(__name__)
 def create_app(settings=None):
     _log.info("Creating app")
 
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='frontend/static',
+                template_folder='frontend/templates')
     app.config.from_object('xssp_rest.default_settings')
     if settings:
         app.config.update(settings)
@@ -27,9 +28,19 @@ def create_app(settings=None):
     app.logger_name = "nowhere"
     app.logger
 
+    # Initialise extensions
+    from xssp_rest import toolbar
+    toolbar.init_app(app)
+
+    # Register jinja2 filters
+    from xssp_rest.frontend.filters import beautify_docstring
+    app.jinja_env.filters['beautify_docstring'] = beautify_docstring
+
     # Register blueprints
     from xssp_rest.frontend.api.endpoints import bp as api_bp
+    from xssp_rest.frontend.dashboard.views import bp as dashboard_bp
     app.register_blueprint(api_bp)
+    app.register_blueprint(dashboard_bp)
 
     return app
 
