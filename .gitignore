@@ -50,3 +50,6 @@ celerybeat-schedule
 
 # bower
 xssp_rest/frontend/static/libs
+
+# vagrant
+.vagrant/
