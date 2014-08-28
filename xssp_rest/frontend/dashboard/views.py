@@ -43,5 +43,6 @@ def output(method, celery_id):
 
 
 @bp.errorhandler(Exception)
-def exception_error_handler(error):
+def exception_error_handler(error):  # pragma: no cover
+    _log.error("Unhandled exception: {}".format(error))
     return render_template('dashboard/error.html', msg=error), 500
