@@ -40,3 +40,8 @@ def index():
 def output(method, celery_id):
     return render_template("dashboard/output.html", method=method,
                            celery_id=celery_id)
+
+
+@bp.errorhandler(Exception)
+def exception_error_handler(error):
+    return render_template('dashboard/error.html', msg=error), 500

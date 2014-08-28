@@ -12,7 +12,9 @@ class TestViews(object):
 
     @classmethod
     def setup_class(cls):
-        cls.flask_app = create_app({'TESTING': True})
+        cls.flask_app = create_app({'TESTING': True,
+                                    'SECRET_KEY': 'testing',
+                                    'WTF_CSRF_ENABLED': False})
         cls.app = cls.flask_app.test_client()
 
     @patch('xssp_rest.tasks.mkdssp_from_pdb.delay')
