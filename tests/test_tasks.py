@@ -10,7 +10,8 @@ class TestTasks(object):
 
     @classmethod
     def setup_class(cls):
-        flask_app = create_app({'CELERY_ALWAYS_EAGER': True})
+        flask_app = create_app({'TESTING': True,
+                                'CELERY_ALWAYS_EAGER': True})
         print flask_app.config
         cls.celery = create_celery_app(flask_app)
 
