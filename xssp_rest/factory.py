@@ -53,8 +53,8 @@ def create_app(settings=None):
         root_logger.setLevel(logging.DEBUG)
 
     # Use ProxyFix to correct URL's when redirecting.
-    from werkzeug.contrib.fixers import ProxyFix
-    app.wsgi_app = ProxyFix(app.wsgi_app)
+    from xssp_rest.middleware import ReverseProxied
+    app.wsgi_app = ReverseProxied(app.wsgi_app)
 
     # Initialise extensions
     from xssp_rest import toolbar
