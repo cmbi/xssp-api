@@ -15,10 +15,20 @@
                             filename='libs/bootstrap/dist/js/bootstrap.min.js') }}">
     </script>
 
+    <script src="{{ url_for('static',
+                            filename='libs/highlightjs/highlight.pack.js') }}">
+    </script>
+
     <!-- Stylesheets -->
     <link rel="stylesheet"
           href="{{ url_for('static',
                            filename='libs/bootstrap/dist/css/bootstrap.min.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static',
+                           filename='libs/highlightjs/styles/github.css') }}">
+
+
     <link rel="stylesheet"
           href="{{ url_for('static',
                            filename='css/site.css') }}">
@@ -37,6 +47,9 @@
         <ul class="nav navbar-nav navbar-right">
           <li>
             <a href="{{ url_for('xssp.api_doc') }}">API</a>
+          </li>
+          <li>
+            <a href="{{ url_for('xssp.api_example') }}">API Example</a>
           </li>
         </ul>
       </div>

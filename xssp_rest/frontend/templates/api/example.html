@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>API Example <small>(python)</small></h2>
+
+<p>
+  This example generate HSSP data from the PDB data for 1CRN. The PDB data is
+  sent to the server, which returns a job ID. This means that the server is
+  currently processing the request. Every five seconds the status of the
+  request is queried, and when it's success, the result is requests and printed
+  to the console.
+</p>
+
+<pre>
+<code class="python">
+import argparse
+import json
+import requests
+import time
+
+pdb_file_path = '~/1crn.pdb'
+rest_service_url = 'http://www.cmbi.umcn.nl/xssp-rest/'
+
+# Assign the PDB data to a variable.
+with open(pdb_file_path) as pdb_file:
+    pdb_content = pdb_file.read()
+
+# Send a request to the xssp-rest service to create HSSP data from the PDB
+# data. The service returns an id.
+r = requests.post(rest_service_url + 'api/create/hssp/from_pdb/',
+                  data={'pdb_content': pdb_content})
+r.raise_for_status()
+job_id = json.loads(r.text)['id']
+print "Job submitted successfully. Id is: '{}'".format(job_id)
+
+# Keep checking the status of the job until it's finished, either by success or
+# failure.
+ready = False
+while not ready:
+    # Request the status of the job started above, passing the id as a
+    # parameter to the service.
+    r = requests.get(rest_service_url +
+                      'api/job/hssp_from_pdb/{}/status/'.format(job_id))
+    r.raise_for_status()
+
+    # Parse the status. If it's either SUCCESS, FAILURE, or REVOKED, the job
+    # has finished. If it hasn't finished, wait 5 seconds before checking
+    # again.
+    status = json.loads(r.text)['status']
+    print "Job status is: '{}'".format(status)
+    if status in ['SUCCESS', 'FAILURE', 'REVOKED']:
+        ready = True
+    else:
+        time.sleep(5)
+else:
+    # Request the output of the job and print it to the console.
+    r = requests.get(rest_service_url +
+                      'api/job/hssp_from_pdb/{}/result/'.format(job_id))
+    r.raise_for_status()
+    result = json.loads(r.text)['result']
+    print result
+</code>
+</pre>
+
+{% endblock %}
+
+{% block js %}
+<script>hljs.initHighlightingOnLoad();</script>
+{% endblock %}
