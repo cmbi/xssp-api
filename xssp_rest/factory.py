@@ -1,4 +1,5 @@
 import logging
+from logging.handlers import SMTPHandler
 
 from celery import Celery
 from flask import Flask
@@ -28,9 +29,32 @@ def create_app(settings=None):
     app.logger_name = "nowhere"
     app.logger
 
+    # Configure email logging. It is somewhat dubious to get _log from the
+    # root package, but I can't see a better way. Having the email handler
+    # configured at the root means all child loggers inherit it.
+    from xssp_rest import _log as root_logger
+    if not app.debug and not app.testing:  # pragma: no cover
+        mail_handler = SMTPHandler((app.config["MAIL_SERVER"],
+                                   app.config["MAIL_SMTP_PORT"]),
+                                   app.config["MAIL_FROM"],
+                                   app.config["MAIL_TO"],
+                                   "xssp-rest failed")
+        mail_handler.setLevel(logging.ERROR)
+        root_logger.addHandler(mail_handler)
+        mail_handler.setFormatter(
+            logging.Formatter("Message type: %(levelname)s\n" +
+                              "Location: %(pathname)s:%(lineno)d\n" +
+                              "Module: %(module)s\n" +
+                              "Function: %(funcName)s\n" +
+                              "Time: %(asctime)s\n" +
+                              "Message:\n" +
+                              "%(message)s"))
+    else:
+        root_logger.setLevel(logging.DEBUG)
+
     # Use ProxyFix to correct URL's when redirecting.
-    from werkzeug.contrib.fixers import ProxyFix
-    app.wsgi_app = ProxyFix(app.wsgi_app)
+    from xssp_rest.middleware import ReverseProxied
+    app.wsgi_app = ReverseProxied(app.wsgi_app)
 
     # Initialise extensions
     from xssp_rest import toolbar
@@ -49,7 +73,7 @@ def create_app(settings=None):
     return app
 
 
-def create_celery_app(app):
+def create_celery_app(app):  # pragma: no cover
     _log.info("Creating celery app")
 
     app = app or create_app()

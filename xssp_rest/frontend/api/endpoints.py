@@ -127,3 +127,8 @@ def api_doc():
         docs[url] = (method, docstring)
 
     return render_template('api/docs.html', docs=docs)
+
+
+@bp.route('/example', methods=['GET'])
+def api_example():
+    return render_template('api/example.html')
