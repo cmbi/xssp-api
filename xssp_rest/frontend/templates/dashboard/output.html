@@ -24,7 +24,7 @@
   $(document).ready(function() {
       var intervalId = setInterval(function(){
         $.getJSON(
-          "/api/job/{{ method }}/{{ celery_id }}/status/",
+          "{{ url_for('xssp.get_xssp_status', job_type=method, id=celery_id) }}",
           function(data) {
             $('#status').text(data['status']);
 
@@ -45,7 +45,7 @@
               $('#status').removeClass("label-default label-info")
                           .addClass("label-success");
               $.getJSON(
-                "/api/job/{{ method }}/{{ celery_id }}/result/",
+                  "{{ url_for('xssp.get_xssp_result', job_type=method, id=celery_id) }}",
                 function(data) {
                   $('#output').text(data['result']);
                 });
