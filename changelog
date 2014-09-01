@@ -1,3 +1,13 @@
+# 2.2.0 (01-09-2014)
+
+	* Clearing the form submits it (#28)
+	* Make xssp-rest available on Internet (#27)
+	* Add error handler for exceptions that aren't dealt with (#26)
+	* Email log handler for production (#25)
+	* REST api examples on web page (#24)
+	* DSSP output wraps in textarea (#23)
+	* Remove API doc from README (#22)
+
 # 2.1.1 (18-08-2014)
 
 	* Fix page not found when behind proxy (#17)
