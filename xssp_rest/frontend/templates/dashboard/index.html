@@ -2,11 +2,6 @@
 
 {% block content %}
 
-<p class="lead">
-  Select the output type and enter a protein sequence or PDB data into the box
-  below, or select a file containing the sequence or PDB data.
-</p>
-
 {% from "form_macros.html" import render_form_errors %}
 
 {{ render_form_errors(form) }}
@@ -15,21 +10,41 @@
       enctype="multipart/form-data">
   {{ form.hidden_tag() }}
 
-  <div class="form-group">
-    {{ form.type_(class_='form-control') }}
+  <div class="row">
+    <div class="col-xs-6">
+      <div class="form-group">
+        {{ form.input_type.label }}
+        {{ form.input_type(class_='form-control') }}
+      </div>
+    </div>
+    <div class="col-xs-6">
+      <div class="form-group">
+        {{ form.output_type.label }}
+        {{ form.output_type(class_='form-control') }}
+      </div>
+    </div>
   </div>
-
-  <div class="form-group">
-    {{ form.data(class_='form-control', rows="20") }}
-  </div>
-  <div class="form-group">
-    <div class="input-group">
-      <span class="input-group-btn">
-        <span class="btn btn-primary btn-file">
-          Browse&hellip; {{ form.file_(class='form-control') }}
-        </span>
-      </span>
-      <input type="text" class="form-control" disabled>
+  <div class="row">
+    <div class="col-xs-12">
+      <div id="pdb_id_div" class="form-group">
+        {{ form.pdb_id(class_='form-control',
+                       placeholder='Enter a PDB Id') }}
+      </div>
+      <div id="sequence_div" class="form-group hidden">
+        {{ form.sequence(class_='form-control',
+                         placeholder='Enter a protein sequence',
+                         rows="3") }}
+      </div>
+      <div id="pdb_file_div" class="form-group hidden">
+        <div class="input-group">
+          <span class="input-group-btn">
+            <span class="btn btn-primary btn-file">
+              Browse&hellip; {{ form.file_(class='form-control') }}
+            </span>
+          </span>
+          <input type="text" class="form-control" disabled>
+        </div>
+      </div>
     </div>
   </div>
   <hr/>
@@ -61,6 +76,33 @@
           } else {
               if( log ) alert(log);
           }
+      });
+
+    $('#input_type').change(function() {
+        var selected = $(this).children(":selected").attr('value');
+        console.debug(selected);
+        switch (selected) {
+        case 'pdb_id':
+          $('#pdb_id_div').removeClass('hidden');
+          $('#sequence_div').addClass('hidden');
+          $('#pdb_file_div').addClass('hidden');
+          break;
+        case 'pdb_redo_id':
+          $('#pdb_id_div').removeClass('hidden');
+          $('#sequence_div').addClass('hidden');
+          $('#pdb_file_div').addClass('hidden');
+          break;
+        case 'pdb_file':
+          $('#pdb_id_div').addClass('hidden');
+          $('#sequence_div').addClass('hidden');
+          $('#pdb_file_div').removeClass('hidden');
+          break;
+        case 'sequence':
+          $('#pdb_id_div').addClass('hidden');
+          $('#sequence_div').removeClass('hidden');
+          $('#pdb_file_div').addClass('hidden');
+          break;
+        }
       });
   });
 </script>

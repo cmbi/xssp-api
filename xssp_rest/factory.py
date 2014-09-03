@@ -33,6 +33,13 @@ def create_app(settings=None):
     # root package, but I can't see a better way. Having the email handler
     # configured at the root means all child loggers inherit it.
     from xssp_rest import _log as root_logger
+
+    # TODO: Make the formatter match gunicorn or at least prettier.
+    ch = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    root_logger.addHandler(ch)
+
     if not app.debug and not app.testing:  # pragma: no cover
         mail_handler = SMTPHandler((app.config["MAIL_SERVER"],
                                    app.config["MAIL_SMTP_PORT"]),
@@ -82,7 +89,6 @@ def create_celery_app(app):  # pragma: no cover
                     backend='amqp',
                     broker=app.config['CELERY_BROKER_URL'])
     celery.conf.update(app.config)
-
     TaskBase = celery.Task
 
     class ContextTask(TaskBase):

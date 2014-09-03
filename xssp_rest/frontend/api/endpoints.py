@@ -5,7 +5,7 @@ import re
 from flask import Blueprint, render_template, request
 from flask.json import jsonify
 
-from xssp_rest.services.xssp import create_dssp, create_hssp
+from xssp_rest.services.xssp import XsspStrategyFactory
 
 
 _log = logging.getLogger(__name__)
@@ -13,66 +13,30 @@ _log = logging.getLogger(__name__)
 bp = Blueprint('xssp', __name__, url_prefix='/api')
 
 
-@bp.route('/create/dssp/from_pdb/', methods=['POST'])
-def create_dssp_from_pdb():
-    """
-    Create DSSP data from a PDB input string.
+# TODO: Improve docs
 
-    :param pdb_content: The PDB data as a string.
-    :return: A unique id for the job running on the server. This is used to
-             retrieve the status and result.
-    """
-    id = create_dssp('pdb', request.form['pdb_content'])
-    return jsonify({'id': id}), 202
+@bp.route('/create/<input_type>/<output_type>/')
+def create_xssp(input_type, output_type):
+    strategy = XsspStrategyFactory.create(input_type, output_type)
+    _log.debug("Using '{}'".format(strategy.__class__.__name__))
+    celery_id = strategy(request.form['data'])
 
-
-@bp.route('/create/hssp/from_pdb/', methods=['POST'])
-def create_hssp_from_pdb():
-    """
-    Create HSSP data from a PDB input string.
-
-    :param pdb_content: The PDB data as a string.
-    :return: A unique id for the job running on the server. This is used to
-             retrieve the status and result.
-    """
-    id = create_hssp('pdb', request.form['pdb_content'])
-    return jsonify({'id': id}), 202
+    _log.info("Task created with id '{}'".format(celery_id))
+    return jsonify({'id': celery_id}), 202
 
 
-@bp.route('/create/hssp/from_sequence/', methods=['POST'])
-def create_hssp_from_sequence():
-    """
-    Create HSSP data from a sequence input string.
-
-    :param sequence: The sequence data as a string.
-    :return: A unique id for the job running on the server. This is used to
-             retrieve the status and result.
-    """
-    id = create_hssp('seq', request.form['sequence'])
-    return jsonify({'id': id}), 202
-
-
-@bp.route('/job/<job_type>/<id>/status/', methods=['GET'])
-def get_xssp_status(job_type, id):
+@bp.route('/job/<input_type>/<output_type>/<id>/status/', methods=['GET'])
+def get_xssp_status(input_type, output_type, id):
     """
     Get the status of a previous job submission.
 
-    :param job_type: Either dssp_from_pdb, hssp_from_pdb, or hssp_from_sequence.
     :param id: The id returned by a call to one of the create methods.
     :return: Either PENDING, STARTED, SUCCESS, FAILURE, RETRY, or REVOKED.
     """
-
-    if job_type == 'dssp_from_pdb':
-        from xssp_rest.tasks import mkdssp_from_pdb
-        async_result = mkdssp_from_pdb.AsyncResult(id)
-    elif job_type == 'hssp_from_pdb':
-        from xssp_rest.tasks import mkhssp_from_pdb
-        async_result = mkhssp_from_pdb.AsyncResult(id)
-    elif job_type == 'hssp_from_sequence':
-        from xssp_rest.tasks import mkhssp_from_sequence
-        async_result = mkhssp_from_sequence.AsyncResult(id)
-    else:
-        return '', 400
+    # Must import here after the
+    from xssp_rest.tasks import get_task
+    task = get_task(input_type, output_type)
+    async_result = task.AsyncResult(id)
 
     response = {'status': async_result.status}
     if async_result.failed():
@@ -80,8 +44,8 @@ def get_xssp_status(job_type, id):
     return jsonify(response)
 
 
-@bp.route('/job/<job_type>/<id>/result/', methods=['GET'])
-def get_xssp_result(job_type, id):
+@bp.route('/job/<input_type>/<output_type>/<id>/result/', methods=['GET'])
+def get_xssp_result(input_type, output_type, id):
     """
     Get the result of a previous job submission.
 
@@ -90,26 +54,17 @@ def get_xssp_result(job_type, id):
     :return: The output of the job. If the job status is not SUCCESS, this
              method returns an error.
     """
-    if job_type == 'dssp_from_pdb':
-        from xssp_rest.tasks import mkdssp_from_pdb
-        response = {'result': mkdssp_from_pdb.AsyncResult(id).get()}
-    elif job_type == 'hssp_from_pdb':
-        from xssp_rest.tasks import mkhssp_from_pdb
-        response = {'result': mkhssp_from_pdb.AsyncResult(id).get()}
-    elif job_type == 'hssp_from_sequence':
-        from xssp_rest.tasks import mkhssp_from_sequence
-        response = {'result':
-                    mkhssp_from_sequence.AsyncResult(id).get()}
-    else:
-        return '', 400
+    from xssp_rest.tasks import get_task
+    task = get_task(input_type, output_type)
+    _log.debug("task is {}".format(task.__name__))
+    response = {'result': task.AsyncResult(id).get()}
+
     return jsonify(response)
 
 
 @bp.route('/', methods=['GET'])
 def api_doc():
-    fs = [create_dssp_from_pdb,
-          create_hssp_from_pdb,
-          create_hssp_from_sequence,
+    fs = [create_xssp,
           get_xssp_status,
           get_xssp_result]
     docs = {}
