@@ -1,3 +1,12 @@
+# 3.0.0 (04-09-2014)
+
+	* Rewrite input form (#35)
+	* Only allow PDB id to be entered (#34)
+	* Reference the api on the output page (#32)
+	* Use repository example code on example page (#31)
+	* Add details of how to run the example python code (#30)
+	* Add option for accession code (#18)
+
 # 2.2.0 (01-09-2014)
 
 	* Clearing the form submits it (#28)
