@@ -15,8 +15,19 @@ bp = Blueprint('xssp', __name__, url_prefix='/api')
 
 # TODO: Improve docs
 
-@bp.route('/create/<input_type>/<output_type>/')
+@bp.route('/create/<input_type>/<output_type>/', methods=['POST'])
 def create_xssp(input_type, output_type):
+    """
+    Create HSSP or DSSP data.
+
+    Adds a job to a queue to produce the data in the given output_type format
+    from the data pass in as the form parameter 'data' in the given input_type
+    format.
+
+    :param input_type: Either 'pdb_id', 'pdb_redo_id', 'pdb_file' or 'sequence'.
+    :param output_type: Either 'hssp_hssp', 'hssp_stockholm', or 'dssp'.
+    :return: The id of the job.
+    """
     strategy = XsspStrategyFactory.create(input_type, output_type)
     _log.debug("Using '{}'".format(strategy.__class__.__name__))
     celery_id = strategy(request.form['data'])
@@ -25,15 +36,16 @@ def create_xssp(input_type, output_type):
     return jsonify({'id': celery_id}), 202
 
 
-@bp.route('/job/<input_type>/<output_type>/<id>/status/', methods=['GET'])
+@bp.route('/status/<input_type>/<output_type>/<id>/', methods=['GET'])
 def get_xssp_status(input_type, output_type, id):
     """
     Get the status of a previous job submission.
 
-    :param id: The id returned by a call to one of the create methods.
+    :param input_type: Either 'pdb_id', 'pdb_redo_id', 'pdb_file' or 'sequence'.
+    :param output_type: Either 'hssp_hssp', 'hssp_stockholm', or 'dssp'.
+    :param id: The id returned by a call to the create method.
     :return: Either PENDING, STARTED, SUCCESS, FAILURE, RETRY, or REVOKED.
     """
-    # Must import here after the
     from xssp_rest.tasks import get_task
     task = get_task(input_type, output_type)
     async_result = task.AsyncResult(id)
@@ -44,13 +56,14 @@ def get_xssp_status(input_type, output_type, id):
     return jsonify(response)
 
 
-@bp.route('/job/<input_type>/<output_type>/<id>/result/', methods=['GET'])
+@bp.route('/result/<input_type>/<output_type>/<id>/', methods=['GET'])
 def get_xssp_result(input_type, output_type, id):
     """
     Get the result of a previous job submission.
 
-    :param job_type: Either dssp_from_pdb, hssp_from_pdb, or hssp_from_sequence.
-    :param id: The id returned by a call to one of the create methods.
+    :param input_type: Either 'pdb_id', 'pdb_redo_id', 'pdb_file' or 'sequence'.
+    :param output_type: Either 'hssp_hssp', 'hssp_stockholm', or 'dssp'.
+    :param id: The id returned by a call to the create method.
     :return: The output of the job. If the job status is not SUCCESS, this
              method returns an error.
     """
