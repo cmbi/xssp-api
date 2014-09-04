@@ -4,30 +4,76 @@ import logging
 _log = logging.getLogger(__name__)
 
 
-def create_hssp(source, data):
-    _log.info("Submitting task to create HSSP from {}".format(source))
+class XsspStrategyFactory(object):
+    @classmethod
+    def create(cls, input_type, output_type):
+        if input_type == 'pdb_id':
+            return PdbIdStrategy(output_type)
+        elif input_type == 'pdb_redo_id':
+            return PdbRedoIdStrategy(output_type)
+        elif input_type == 'pdb_file':
+            return PdbContentStrategy(output_type)
+        elif input_type == 'sequence':
+            return SequenceStrategy(output_type)
+        else:
+            raise ValueError("Unexpected input type '{}'".format(input_type))
 
-    if source == 'pdb':
-        from xssp_rest.tasks import mkhssp_from_pdb
-        result = mkhssp_from_pdb.delay(data)
-    elif source == 'seq':
-        from xssp_rest.tasks import mkhssp_from_sequence
-        result = mkhssp_from_sequence.delay(data)
-    else:
-        raise ValueError("Unexpected source type: '{}'".format(source))
 
-    _log.info("Task created with id '{}'".format(result.id))
-    return result.id
+class PdbIdStrategy(object):
+    def __init__(self, output_format):
+        self.output_format = output_format
+
+    def __call__(self, pdb_id):
+        from xssp_rest.tasks import get_task
+        task = get_task('pdb_id', self.output_format)
+        _log.debug("Calling task '{}'".format(task.__name__))
+
+        if 'hssp' in self.output_format:
+            result = task.delay(pdb_id, self.output_format)
+        else:
+            result = task.delay(pdb_id)
+        return result.id
 
 
-def create_dssp(source, data):
-    _log.info("Submitting task to create DSSP from {}".format(source))
+class PdbRedoIdStrategy(object):
+    def __init__(self, output_format):
+        self.output_format = output_format
 
-    if source == 'pdb':
-        from xssp_rest.tasks import mkdssp_from_pdb
-        result = mkdssp_from_pdb.delay(data)
-    else:
-        raise ValueError("Unexpected source type: '{}'".format(source))
+    def __call__(self, pdb_redo_id):
+        from xssp_rest.tasks import get_task
+        task = get_task('pdb_redo_id', self.output_format)
+        _log.debug("Calling task '{}'".format(task.__name__))
 
-    _log.info("Task created with id '{}'".format(result.id))
-    return result.id
+        if self.output_format == 'dssp':
+            result = task.delay(pdb_redo_id)
+        return result.id
+
+
+class SequenceStrategy(object):
+    def __init__(self, output_format):
+        self.output_format = output_format
+
+    def __call__(self, sequence):
+        from xssp_rest.tasks import get_task
+        task = get_task('sequence', self.output_format)
+        _log.debug("Calling task '{}'".format(task.__name__))
+
+        if 'hssp' in self.output_format:
+            result = task.delay(sequence, self.output_format)
+        return result.id
+
+
+class PdbContentStrategy(object):
+    def __init__(self, output_format):
+        self.output_format = output_format
+
+    def __call__(self, pdb_content):
+        from xssp_rest.tasks import get_task
+        task = get_task('pdb_file', self.output_format)
+        _log.debug("Calling task '{}'".format(task.__name__))
+
+        if 'hssp' in self.output_format:
+            result = task.delay(pdb_content, self.output_format)
+        else:
+            result = task.delay(pdb_content)
+        return result.id

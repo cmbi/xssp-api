@@ -1,5 +1,6 @@
 import logging
 
+import bz2
 import os
 import subprocess
 import tempfile
@@ -44,7 +45,7 @@ def mkdssp_from_pdb(pdb_content):
 
 
 @celery_app.task
-def mkhssp_from_pdb(pdb_content):
+def mkhssp_from_pdb(pdb_content, output_format):
     """
     Creates a HSSP file from the given pdb content.
 
@@ -67,6 +68,11 @@ def mkhssp_from_pdb(pdb_content):
                            []))
         _log.debug("Running command '{}'".format(args))
         output = subprocess.check_output(args)
+
+        if output_format == 'hssp_hssp':
+            return _stockholm_to_hssp(output)
+        else:
+            return output
     except subprocess.CalledProcessError as e:
         _log.error("Error: {}".format(e.output))
         raise RuntimeError(e.output)
@@ -74,11 +80,9 @@ def mkhssp_from_pdb(pdb_content):
         _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
         os.remove(tmp_file.name)
 
-    return output
-
 
 @celery_app.task
-def mkhssp_from_sequence(sequence):
+def mkhssp_from_sequence(sequence, output_format):
     """
     Creates a HSSP file from the given sequence.
 
@@ -110,8 +114,132 @@ def mkhssp_from_sequence(sequence):
         except subprocess.CalledProcessError as e:
             _log.error("Error: {}".format(e.output))
             raise RuntimeError(e.output)
+
+        if output_format == 'hssp_hssp':
+            return _stockholm_to_hssp(output)
+        else:
+            return output
     finally:
         _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
         os.remove(tmp_file.name)
 
-    return output
+
+@celery_app.task
+def get_hssp(pdb_id, output_type):
+    _log.info("Getting hssp data for '{}' in format '{}'".format(pdb_id,
+                                                                 output_type))
+
+    # Determine path to hssp file and check that it exists.
+    if output_type == 'hssp_hssp':
+        hssp_path = os.path.join(flask_app.config['HSSP_ROOT'],
+                                 pdb_id + '.hssp.bz2')
+    elif output_type == 'hssp_stockholm':
+        hssp_path = os.path.join(flask_app.config['HSSP_STO_ROOT'],
+                                 pdb_id + '.hssp.bz2')
+    else:
+        raise ValueError("Unexepected output type '{}'".format(output_type))
+
+    if not os.path.exists(hssp_path):
+        raise RuntimeError("File not found: '{}'".format(hssp_path))
+
+    # Unzip the file and return the contents
+    _log.info("Unzipping '{}'".format(hssp_path))
+    with bz2.BZ2File(hssp_path) as f:
+        hssp_content = f.read()
+    return hssp_content
+
+
+@celery_app.task
+def get_dssp(pdb_id):
+    _log.info("Getting dssp data for '{}'".format(pdb_id))
+
+    # Determine path to hssp file and check that it exists.
+    dssp_path = os.path.join(flask_app.config['DSSP_ROOT'], pdb_id + '.dssp')
+    if not os.path.exists(dssp_path):
+        raise RuntimeError("File not found: '{}'".format(dssp_path))
+
+    # Unzip the file and return the contents
+    _log.info("Reading '{}'".format(dssp_path))
+    with open(dssp_path) as f:
+        dssp_content = f.read()
+    return dssp_content
+
+
+@celery_app.task
+def get_dssp_redo(pdb_redo_id):
+    _log.info("Getting dssp data for redo '{}'".format(pdb_redo_id))
+
+    # Determine path to hssp file and check that it exists.
+    dssp_path = os.path.join(flask_app.config['DSSP_REDO_ROOT'],
+                             pdb_redo_id + '.dssp')
+    if not os.path.exists(dssp_path):
+        raise RuntimeError("File not found: '{}'".format(dssp_path))
+
+    # Unzip the file and return the contents
+    _log.info("Reading '{}'".format(dssp_path))
+    with open(dssp_path) as f:
+        dssp_content = f.read()
+    return dssp_content
+
+
+def get_task(input_type, output_type):
+    """
+    Get the task for the given input_type and output_type combination.
+
+    If the combination is not allowed, a ValueError is raised.
+    """
+    _log.info("Getting task for input '{}' and output '{}'".format(input_type,
+                                                                   output_type))
+
+    if input_type == 'pdb_id':
+        if output_type == 'dssp':
+            task = get_dssp
+        else:
+            task = get_hssp
+    elif input_type == 'pdb_redo_id':
+        if output_type == 'dssp':
+            task = get_dssp_redo
+        else:
+            raise ValueError("Invalid input and output combination")
+    elif input_type == 'pdb_file':
+        if output_type == 'dssp':
+            task = mkdssp_from_pdb
+        else:
+            task = mkhssp_from_pdb
+    elif input_type == 'sequence':
+        if output_type == 'hssp_hssp' or \
+           output_type == 'hssp_stockholm':
+            task = mkhssp_from_sequence
+        else:
+            raise ValueError("Invalid input and output combination")
+    else:
+        raise ValueError("Unexpected input_type '{}'".format(input_type))
+
+    _log.debug("Got task '{}'".format(task.__name__))
+    return task
+
+
+def _stockholm_to_hssp(stockholm_data):
+    _log.info("Converting stockholm to hssp")
+
+    tmp_file = tempfile.NamedTemporaryFile(prefix='hssp_rest_tmp',
+                                           delete=False)
+    _log.debug("Created tmp file '{}'".format(tmp_file.name))
+
+    try:
+        with tmp_file as f:
+            _log.debug("Writing data to '{}'".format(tmp_file.name))
+            f.write(stockholm_data)
+
+        _log.info("Calling hsspconv")
+        args = ['hsspconv', '-i', tmp_file.name]
+        _log.debug("Running command '{}'".format(args))
+        output = subprocess.check_output(args)
+
+        return output
+    except subprocess.CalledProcessError as e:
+        _log.error("Error: {}".format(e.output))
+        raise RuntimeError(e.output)
+    finally:
+        _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
+        os.remove(tmp_file.name)

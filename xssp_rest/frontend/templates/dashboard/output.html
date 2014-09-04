@@ -16,6 +16,17 @@
               style="font-family: monospace; font-size: 8pt;"
               rows=30 readonly>
     </textarea>
+    <br>
+    <p>
+      Doing this often? Consider using the
+      <a href='{{ url_for('xssp.api_doc') }}'>API</a> to automate the process.
+      Check out the <a href='{{ url_for('xssp.api_example') }}'>simple
+      ready-to-use example</a>.
+    </p>
+    <p>
+      Instructions for downloading existing DSSP files using rsync can be found
+      <a href="http://swift.cmbi.ru.nl/gv/dssp">here</a>.
+    </p>
   </div>
 </div>
 
@@ -26,7 +37,7 @@
   $(document).ready(function() {
       var intervalId = setInterval(function(){
         $.getJSON(
-          "{{ url_for('xssp.get_xssp_status', job_type=method, id=celery_id) }}",
+          "{{ url_for('xssp.get_xssp_status', input_type=input_type, output_type=output_type, id=celery_id) }}",
           function(data) {
             $('#status').text(data['status']);
 
@@ -47,7 +58,7 @@
               $('#status').removeClass("label-default label-info")
                           .addClass("label-success");
               $.getJSON(
-                  "{{ url_for('xssp.get_xssp_result', job_type=method, id=celery_id) }}",
+                  "{{ url_for('xssp.get_xssp_result', input_type=input_type, output_type=output_type, id=celery_id) }}",
                 function(data) {
                   $('#output').text(data['result']);
                 });
