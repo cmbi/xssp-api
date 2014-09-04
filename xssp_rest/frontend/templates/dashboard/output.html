@@ -26,7 +26,7 @@
   $(document).ready(function() {
       var intervalId = setInterval(function(){
         $.getJSON(
-          "{{ url_for('xssp.get_xssp_status', job_type=method, id=celery_id) }}",
+          "{{ url_for('xssp.get_xssp_status', input_type=input_type, output_type=output_type, id=celery_id) }}",
           function(data) {
             $('#status').text(data['status']);
 
@@ -47,7 +47,7 @@
               $('#status').removeClass("label-default label-info")
                           .addClass("label-success");
               $.getJSON(
-                  "{{ url_for('xssp.get_xssp_result', job_type=method, id=celery_id) }}",
+                  "{{ url_for('xssp.get_xssp_result', input_type=input_type, output_type=output_type, id=celery_id) }}",
                 function(data) {
                   $('#output').text(data['result']);
                 });
