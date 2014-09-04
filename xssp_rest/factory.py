@@ -34,13 +34,8 @@ def create_app(settings=None):
     # configured at the root means all child loggers inherit it.
     from xssp_rest import _log as root_logger
 
-    # TODO: Make the formatter match gunicorn or at least prettier.
-    ch = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    ch.setFormatter(formatter)
-    root_logger.addHandler(ch)
-
     if not app.debug and not app.testing:  # pragma: no cover
+        # Only log to email during production.
         mail_handler = SMTPHandler((app.config["MAIL_SERVER"],
                                    app.config["MAIL_SMTP_PORT"]),
                                    app.config["MAIL_FROM"],
@@ -56,6 +51,16 @@ def create_app(settings=None):
                               "Time: %(asctime)s\n" +
                               "Message:\n" +
                               "%(message)s"))
+    elif app.debug and not app.testing:
+        # Only log to the console during development and production, but not
+        # during testing.
+        ch = logging.StreamHandler()
+        formatter = logging.Formatter(
+            '%(asctime)s - %(levelname)s - %(message)s')
+        ch.setFormatter(formatter)
+        root_logger.addHandler(ch)
+
+        root_logger.setLevel(logging.DEBUG)
     else:
         root_logger.setLevel(logging.DEBUG)
 
