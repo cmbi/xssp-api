@@ -1,6 +1,6 @@
 import subprocess
 
-from mock import ANY, patch
+from mock import ANY, call, patch
 from nose.tools import eq_, raises
 
 from xssp_rest.factory import create_app, create_celery_app
@@ -12,7 +12,6 @@ class TestTasks(object):
     def setup_class(cls):
         flask_app = create_app({'TESTING': True,
                                 'CELERY_ALWAYS_EAGER': True})
-        print flask_app.config
         cls.celery = create_celery_app(flask_app)
 
     @patch('subprocess.check_output')
@@ -37,16 +36,15 @@ class TestTasks(object):
 
     @patch('subprocess.check_output')
     def test_mkhssp_from_pdb(self, mock_subprocess):
-        mock_subprocess.return_value = "output"
+        mock_subprocess.side_effect = ["output1", "output2"]
 
         from xssp_rest.tasks import mkhssp_from_pdb
-        result = mkhssp_from_pdb.delay('pdb-content')
+        result = mkhssp_from_pdb.delay('pdb-content', 'hssp_hssp')
 
-        eq_(result.get(), "output")
-        mock_subprocess.assert_called_once_with(['mkhssp',
-                                                 '-i', ANY,
-                                                 '-d', ANY,
-                                                 '-d', ANY])
+        eq_(result.get(), "output2")
+        mock_subprocess.assert_has_calls([
+            call(['mkhssp', '-i', ANY, '-d', ANY, '-d', ANY]),
+            call(['hsspconv', '-i', ANY])])
 
     @patch('subprocess.check_output')
     @raises(RuntimeError)
@@ -55,7 +53,7 @@ class TestTasks(object):
             "returncode", "cmd", "output")
 
         from xssp_rest.tasks import mkhssp_from_pdb
-        result = mkhssp_from_pdb.delay('pdb-content')
+        result = mkhssp_from_pdb.delay('pdb-content', 'hssp_hssp')
         result.get()
 
     @patch('subprocess.check_output')
@@ -63,7 +61,7 @@ class TestTasks(object):
         mock_subprocess.return_value = "output"
 
         from xssp_rest.tasks import mkhssp_from_sequence
-        result = mkhssp_from_sequence.delay('sequence')
+        result = mkhssp_from_sequence.delay('sequence', 'hssp_stockholm')
 
         eq_(result.get(), "output")
         mock_subprocess.assert_called_once_with(['mkhssp',
@@ -78,5 +76,5 @@ class TestTasks(object):
             "returncode", "cmd", "output")
 
         from xssp_rest.tasks import mkhssp_from_sequence
-        result = mkhssp_from_sequence.delay('sequence')
+        result = mkhssp_from_sequence.delay('sequence', 'hssp_hssp')
         result.get()
