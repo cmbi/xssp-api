@@ -13,8 +13,6 @@ _log = logging.getLogger(__name__)
 bp = Blueprint('xssp', __name__, url_prefix='/api')
 
 
-# TODO: Improve docs
-
 @bp.route('/create/<input_type>/<output_type>/', methods=['POST'])
 def create_xssp(input_type, output_type):
     """
