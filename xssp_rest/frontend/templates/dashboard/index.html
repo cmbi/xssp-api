@@ -31,6 +31,12 @@
                        placeholder='Enter a PDB code') }}
       </div>
       <div id="sequence_div" class="form-group hidden">
+        <div class="alert alert-warning" role="alert">
+          <span class="glyphicon glyphicon-warning-sign"></span>
+          New sequences will be aligned against the input sequence and not
+          against a sequence from a PDB structure as is done for normal HSSP
+          alignments.
+        </div>
         {{ form.sequence(class_='form-control',
                          placeholder='Enter a protein sequence',
                          rows="3") }}
@@ -59,6 +65,49 @@
 {% block js %}
 
 <script type="text/javascript">
+
+  function show_pdbid_input() {
+    $('#pdb_id_div').removeClass('hidden');
+    $('#sequence_div').addClass('hidden');
+    $('#pdb_file_div').addClass('hidden');
+  }
+
+  function show_pdbfile_input() {
+    $('#pdb_id_div').addClass('hidden');
+    $('#sequence_div').addClass('hidden');
+    $('#pdb_file_div').removeClass('hidden');
+  }
+
+  function show_sequence_input() {
+    $('#pdb_id_div').addClass('hidden');
+    $('#sequence_div').removeClass('hidden');
+    $('#pdb_file_div').addClass('hidden');
+  }
+
+  function update_input_types() {
+    var selected = $('#output_type').children(":selected").attr('value');
+    switch (selected) {
+      case 'dssp':
+        $('#input_type').empty();
+        $('#input_type').append('<option value="pdb_id">PDB Id</option>');
+        $('#input_type').append('<option value="pdb_redo_id">PDB_REDO Id</option>');
+        $('#input_type').append('<option value="pdb_file">PDB File</option>');
+        break;
+      case 'hssp_hssp':
+        $('#input_type').empty();
+        $('#input_type').append('<option value="pdb_id">PDB Id</option>');
+        $('#input_type').append('<option value="pdb_file">PDB File</option>');
+        $('#input_type').append('<option value="sequence">Sequence</option>');
+        break;
+      case 'hssp_stockholm':
+        $('#input_type').empty();
+        $('#input_type').append('<option value="pdb_id">PDB Id</option>');
+        $('#input_type').append('<option value="pdb_file">PDB File</option>');
+        $('#input_type').append('<option value="sequence">Sequence</option>');
+        break;
+    }
+  }
+
   $(document).on('change', '.btn-file :file', function() {
     var input = $(this),
         numFiles = input.get(0).files ? input.get(0).files.length : 1,
@@ -76,34 +125,39 @@
           } else {
               if( log ) alert(log);
           }
-      });
+    });
 
+    // Show the correct input widget depending on the selected input method.
     $('#input_type').change(function() {
         var selected = $(this).children(":selected").attr('value');
-        console.debug(selected);
         switch (selected) {
         case 'pdb_id':
-          $('#pdb_id_div').removeClass('hidden');
-          $('#sequence_div').addClass('hidden');
-          $('#pdb_file_div').addClass('hidden');
+          show_pdbid_input();
           break;
         case 'pdb_redo_id':
-          $('#pdb_id_div').removeClass('hidden');
-          $('#sequence_div').addClass('hidden');
-          $('#pdb_file_div').addClass('hidden');
+          show_pdbid_input();
           break;
         case 'pdb_file':
-          $('#pdb_id_div').addClass('hidden');
-          $('#sequence_div').addClass('hidden');
-          $('#pdb_file_div').removeClass('hidden');
+          show_pdbfile_input();
           break;
         case 'sequence':
-          $('#pdb_id_div').addClass('hidden');
-          $('#sequence_div').removeClass('hidden');
-          $('#pdb_file_div').addClass('hidden');
+          show_sequence_input();
           break;
         }
-      });
+    });
+
+    // Update the input type selection list to exclude invalid combinations.
+    $('#output_type').change(update_input_types);
+
+    // Ensure that the correct input field is displayed when the form reloads
+    // due to form errors, page refreshing, or the back button.
+    $('#input_type').trigger('change');
+
+    // Ensure that the input types listed are correct for the selected output
+    // type.
+    var selected = $('#input_type').children(":selected").attr('value');
+    update_input_types();
+    $('#input_type option[value=' + selected + ']').prop('selected', true);
   });
 </script>
 
