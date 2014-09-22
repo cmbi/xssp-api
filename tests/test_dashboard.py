@@ -43,6 +43,31 @@ class TestDashboard(object):
         assert "Please wait while your request is processed" in rv.data
         mock_call.assert_called_once_with(test_sequence)
 
+    @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
+    def test_index_post_hssp_from_sequence_no_input(self, mock_call):
+        mock_call.return_value = 12345
+        rv = self.app.post('/', data={'input_type': 'sequence',
+                                      'output_type': 'hssp_hssp',
+                                      'sequence': None},
+                           follow_redirects=True)
+        eq_(rv.status_code, 200)
+        assert "This field is required if &#39;pdb_id&#39; and " + \
+               "&#39;file_&#39; have not been provided" in rv.data
+
+    @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
+    def test_index_post_hssp_from_sequence_invalid(self, mock_call):
+        mock_call.return_value = 12345
+        test_sequence= 'BJOZ'
+        rv = self.app.post('/', data={'input_type': 'sequence',
+                                      'output_type': 'hssp_hssp',
+                                      'sequence': test_sequence},
+                           follow_redirects=True)
+        eq_(rv.status_code, 200)
+        print rv.data
+        assert 'Can only contain residues from the set ' + \
+               '&#34;ACDEFGHIKLMNPQRSTVWXY&#34;' in rv.data
+        assert "Must be at least 25 residues long" in rv.data
+
     @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
     def test_index_post_dssp_from_pdb(self, mock_call):
         mock_call.return_value = 12345
@@ -54,3 +79,14 @@ class TestDashboard(object):
         eq_(rv.status_code, 200)
         assert "Please wait while your request is processed" in rv.data
         mock_call.assert_called_once_with('not-real-pdb')
+
+    @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
+    def test_index_post_dssp_from_pdb_no_input(self, mock_call):
+        mock_call.return_value = 12345
+        rv = self.app.post('/', data={'input_type': 'pdb_file',
+                                      'output_type': 'dssp',
+                                      'file_': (None, None)},
+                           follow_redirects=True)
+        eq_(rv.status_code, 200)
+        assert "This field is required if &#39;pdb_id&#39; and " + \
+               "&#39;sequence&#39; have not been provided" in rv.data
