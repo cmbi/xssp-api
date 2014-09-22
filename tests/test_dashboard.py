@@ -50,7 +50,6 @@ class TestDashboard(object):
                                       'file_': (StringIO('not-real-pdb'),
                                                 'fake.pdb')},
                            follow_redirects=True)
-        print rv.data
         eq_(rv.status_code, 200)
         assert "Please wait while your request is processed" in rv.data
         mock_call.assert_called_once_with('not-real-pdb')
