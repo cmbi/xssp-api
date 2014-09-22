@@ -34,13 +34,14 @@ class TestDashboard(object):
     @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
     def test_index_post_hssp_from_sequence(self, mock_call):
         mock_call.return_value = 12345
+        test_sequence = 'ACDEFGHIKLMNPQRSTVWXYACDEFGHIKLMNPQRSTVWXY'
         rv = self.app.post('/', data={'input_type': 'sequence',
                                       'output_type': 'hssp_hssp',
-                                      'sequence': 'not-real-seq'},
+                                      'sequence': test_sequence},
                            follow_redirects=True)
         eq_(rv.status_code, 200)
         assert "Please wait while your request is processed" in rv.data
-        mock_call.assert_called_once_with('not-real-seq')
+        mock_call.assert_called_once_with(test_sequence)
 
     @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
     def test_index_post_dssp_from_pdb(self, mock_call):
