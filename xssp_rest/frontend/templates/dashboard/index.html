@@ -84,6 +84,30 @@
     $('#pdb_file_div').addClass('hidden');
   }
 
+  function update_input_types() {
+    var selected = $('#output_type').children(":selected").attr('value');
+    switch (selected) {
+      case 'dssp':
+        $('#input_type').empty();
+        $('#input_type').append('<option value="pdb_id">PDB Id</option>');
+        $('#input_type').append('<option value="pdb_redo_id">PDB_REDO Id</option>');
+        $('#input_type').append('<option value="pdb_file">PDB File</option>');
+        break;
+      case 'hssp_hssp':
+        $('#input_type').empty();
+        $('#input_type').append('<option value="pdb_id">PDB Id</option>');
+        $('#input_type').append('<option value="pdb_file">PDB File</option>');
+        $('#input_type').append('<option value="sequence">Sequence</option>');
+        break;
+      case 'hssp_stockholm':
+        $('#input_type').empty();
+        $('#input_type').append('<option value="pdb_id">PDB Id</option>');
+        $('#input_type').append('<option value="pdb_file">PDB File</option>');
+        $('#input_type').append('<option value="sequence">Sequence</option>');
+        break;
+    }
+  }
+
   $(document).on('change', '.btn-file :file', function() {
     var input = $(this),
         numFiles = input.get(0).files ? input.get(0).files.length : 1,
@@ -92,9 +116,6 @@
   });
 
   $(document).ready( function() {
-    // Remove the sequence input type as the default output type is DSSP.
-    $('#input_type > option[value=sequence]').remove();
-
     $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
           var input = $(this).parents('.input-group').find(':text'),
               log = numFiles > 1 ? numFiles + ' files selected' : label;
@@ -126,37 +147,17 @@
     });
 
     // Update the input type selection list to exclude invalid combinations.
-    $('#output_type').change(function() {
-        var selected = $(this).children(":selected").attr('value');
-        switch (selected) {
-        case 'dssp':
-          $('#input_type').empty();
-          $('#input_type').append('<option value="pdb_id">PDB Id</option>');
-          $('#input_type').append('<option value="pdb_redo_id">PDB_REDO Id</option>');
-          $('#input_type').append('<option value="pdb_file">PDB File</option>');
-          break;
-        case 'hssp_hssp':
-          $('#input_type').empty();
-          $('#input_type').append('<option value="pdb_id">PDB Id</option>');
-          $('#input_type').append('<option value="pdb_file">PDB File</option>');
-          $('#input_type').append('<option value="sequence">Sequence</option>');
-          break;
-        case 'hssp_stockholm':
-          $('#input_type').empty();
-          $('#input_type').append('<option value="pdb_id">PDB Id</option>');
-          $('#input_type').append('<option value="pdb_file">PDB File</option>');
-          $('#input_type').append('<option value="sequence">Sequence</option>');
-          break;
-        }
+    $('#output_type').change(update_input_types);
 
-        // All output types accept pdb_id as input. Show this input widget to
-        // avoid having an invalid combination when the output_type is changed.
-        show_pdbid_input();
-    });
-
-    // Trigger updating the input_type list to cope when the user uses the back
-    // button to return to the page.
+    // Ensure that the correct input field is displayed when the form reloads
+    // due to form errors, page refreshing, or the back button.
     $('#input_type').trigger('change');
+
+    // Ensure that the input types listed are correct for the selected output
+    // type.
+    var selected = $('#input_type').children(":selected").attr('value');
+    update_input_types();
+    $('#input_type option[value=' + selected + ']').prop('selected', true);
   });
 </script>
 
