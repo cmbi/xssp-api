@@ -57,7 +57,7 @@ class TestDashboard(object):
     @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
     def test_index_post_hssp_from_sequence_invalid(self, mock_call):
         mock_call.return_value = 12345
-        test_sequence= 'BJOZ'
+        test_sequence = 'BJOZ'
         rv = self.app.post('/', data={'input_type': 'sequence',
                                       'output_type': 'hssp_hssp',
                                       'sequence': test_sequence},

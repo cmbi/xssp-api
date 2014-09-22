@@ -62,10 +62,10 @@ def install_xssp():
     # # Build xssp itself now
     git("https://github.com/cmbi/xssp.git", "~", "vagrant")
     # with cd("/home/vagrant/xssp"):
-        # run("autoreconf -i")
-        # run("./configure")
-        # run("make")
-        # sudo("make install")
+    #     run("autoreconf -i")
+    #     run("./configure")
+    #     run("make")
+    #     sudo("make install")
     prompt("Manually install xssp and press enter when ready")
 
 

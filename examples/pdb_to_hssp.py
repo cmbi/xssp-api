@@ -29,8 +29,8 @@ def pdb_to_hssp(pdb_file_path, rest_url):
     job_id = json.loads(r.text)['id']
     print "Job submitted successfully. Id is: '{}'".format(job_id)
 
-    # Loop until the job running on the server has finished, either successfully
-    # or due to an error.
+    # Loop until the job running on the server has finished,
+    # either successfully or due to an error.
     ready = False
     while not ready:
         # Check the status of the running job. If an error occurs an exception
@@ -48,8 +48,8 @@ def pdb_to_hssp(pdb_file_path, rest_url):
         # condition ready. This causes the code to drop into the `else` block
         # below.
         #
-        # If the status equals either FAILURE or REVOKED, an exception is raised
-        # containing the error message. The program exits.
+        # If the status equals either FAILURE or REVOKED, an exception is
+        # raised containing the error message. The program exits.
         #
         # Otherwise, wait for five seconds and start at the beginning of the
         # loop again.
@@ -61,8 +61,8 @@ def pdb_to_hssp(pdb_file_path, rest_url):
             time.sleep(5)
     else:
         # Requests the result of the job. If an error occurs an exception is
-        # raised and the program exits. If the request is successful, the result
-        # is returned.
+        # raised and the program exits. If the request is successful,
+        # the result is returned.
         url_result = '{}api/result/pdb_file/hssp_hssp/{}/'.format(rest_url,
                                                                   job_id)
         r = requests.get(url_result)
