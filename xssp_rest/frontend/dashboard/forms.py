@@ -24,10 +24,11 @@ class XsspForm(Form):
     pdb_id = TextField(u'PDB code', [NotRequiredIfOneOf(['sequence', 'file_']),
                                      Regexp(regex=RE_PDB_ID)])
     sequence = TextAreaField(u'Sequence', [
+        NotRequiredIfOneOf(['pdb_id', 'file_']),
         Regexp(RE_SEQ,
                message='Can only contain residues from ' +
                        'the set "ACDEFGHIKLMNPQRSTVWXY"'),
         length(min=25,
                message='Must be at least 25 residues long.')
     ])
-    file_ = FileField(u'File')
+    file_ = FileField(u'File', [NotRequiredIfOneOf(['pdb_id', 'file_'])])
