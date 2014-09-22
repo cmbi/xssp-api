@@ -23,7 +23,8 @@ class XsspForm(Form):
     sequence = TextAreaField(u'Sequence', [
         Regexp(RE_SEQ,
                message='Can only contain residues from ' +
-                       'the set "XARNDCEQGHILKMFPSTWYV"'),
-        length(min=25)
+                       'the set "ACDEFGHIKLMNPQRSTVWXY"'),
+        length(min=25,
+               message='Must be at least 25 residues long.')
     ])
     file_ = FileField(u'File')
