@@ -59,6 +59,25 @@
 {% block js %}
 
 <script type="text/javascript">
+
+  function show_pdbid_input() {
+    $('#pdb_id_div').removeClass('hidden');
+    $('#sequence_div').addClass('hidden');
+    $('#pdb_file_div').addClass('hidden');
+  }
+
+  function show_pdbfile_input() {
+    $('#pdb_id_div').addClass('hidden');
+    $('#sequence_div').addClass('hidden');
+    $('#pdb_file_div').removeClass('hidden');
+  }
+
+  function show_sequence_input() {
+    $('#pdb_id_div').addClass('hidden');
+    $('#sequence_div').removeClass('hidden');
+    $('#pdb_file_div').addClass('hidden');
+  }
+
   $(document).on('change', '.btn-file :file', function() {
     var input = $(this),
         numFiles = input.get(0).files ? input.get(0).files.length : 1,
@@ -67,6 +86,9 @@
   });
 
   $(document).ready( function() {
+    // Remove the sequence input type as the default output type is DSSP.
+    $('#input_type > option[value=sequence]').remove();
+
     $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
           var input = $(this).parents('.input-group').find(':text'),
               log = numFiles > 1 ? numFiles + ' files selected' : label;
@@ -76,34 +98,59 @@
           } else {
               if( log ) alert(log);
           }
-      });
+    });
 
+    // Show the correct input widget depending on the selected input method.
     $('#input_type').change(function() {
         var selected = $(this).children(":selected").attr('value');
-        console.debug(selected);
         switch (selected) {
         case 'pdb_id':
-          $('#pdb_id_div').removeClass('hidden');
-          $('#sequence_div').addClass('hidden');
-          $('#pdb_file_div').addClass('hidden');
+          show_pdbid_input();
           break;
         case 'pdb_redo_id':
-          $('#pdb_id_div').removeClass('hidden');
-          $('#sequence_div').addClass('hidden');
-          $('#pdb_file_div').addClass('hidden');
+          show_pdbid_input();
           break;
         case 'pdb_file':
-          $('#pdb_id_div').addClass('hidden');
-          $('#sequence_div').addClass('hidden');
-          $('#pdb_file_div').removeClass('hidden');
+          show_pdbfile_input();
           break;
         case 'sequence':
-          $('#pdb_id_div').addClass('hidden');
-          $('#sequence_div').removeClass('hidden');
-          $('#pdb_file_div').addClass('hidden');
+          show_sequence_input();
           break;
         }
-      });
+    });
+
+    // Update the input type selection list to exclude invalid combinations.
+    $('#output_type').change(function() {
+        var selected = $(this).children(":selected").attr('value');
+        switch (selected) {
+        case 'dssp':
+          $('#input_type').empty();
+          $('#input_type').append('<option value="pdb_id">PDB Id</option>');
+          $('#input_type').append('<option value="pdb_redo_id">PDB_REDO Id</option>');
+          $('#input_type').append('<option value="pdb_file">PDB File</option>');
+          break;
+        case 'hssp_hssp':
+          $('#input_type').empty();
+          $('#input_type').append('<option value="pdb_id">PDB Id</option>');
+          $('#input_type').append('<option value="pdb_file">PDB File</option>');
+          $('#input_type').append('<option value="sequence">Sequence</option>');
+          break;
+        case 'hssp_stockholm':
+          $('#input_type').empty();
+          $('#input_type').append('<option value="pdb_id">PDB Id</option>');
+          $('#input_type').append('<option value="pdb_file">PDB File</option>');
+          $('#input_type').append('<option value="sequence">Sequence</option>');
+          break;
+        }
+
+        // All output types accept pdb_id as input. Show this input widget to
+        // avoid having an invalid combination when the output_type is changed.
+        show_pdbid_input();
+    });
+
+    // Trigger updating the input_type list to cope when the user uses the back
+    // button to return to the page.
+    $('#input_type').trigger('change');
   });
 </script>
 
