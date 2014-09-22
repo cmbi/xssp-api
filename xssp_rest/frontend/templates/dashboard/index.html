@@ -31,6 +31,12 @@
                        placeholder='Enter a PDB code') }}
       </div>
       <div id="sequence_div" class="form-group hidden">
+        <div class="alert alert-warning" role="alert">
+          <span class="glyphicon glyphicon-warning-sign"></span>
+          New sequences will be aligned against the input sequence and not
+          against a sequence from a PDB structure as is done for normal HSSP
+          alignments.
+        </div>
         {{ form.sequence(class_='form-control',
                          placeholder='Enter a protein sequence',
                          rows="3") }}
