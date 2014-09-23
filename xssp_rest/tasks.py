@@ -2,12 +2,15 @@ import logging
 
 import bz2
 import os
+import re
 import subprocess
 import tempfile
 import textwrap
 
 from celery import current_app as celery_app
 from flask import current_app as flask_app
+
+from xssp_rest.frontend.validators import RE_FASTA_DESCRIPTION
 
 
 _log = logging.getLogger(__name__)
@@ -86,8 +89,10 @@ def mkhssp_from_sequence(sequence, output_format):
     """
     Creates a HSSP file from the given sequence.
 
-    mkhssp accepts a fasta file as input. The given sequence is saved to a
+    mkhssp accepts a FASTA file as input. The given sequence is saved to a
     temporary file which is passed as the input argument.
+
+    If present, the input FASTA description line is used.
     """
     # The temporary file name must end in .fasta, otherwise mkhssp assumes it's
     # a PDB file.
@@ -99,7 +104,12 @@ def mkhssp_from_sequence(sequence, output_format):
     try:
         with tmp_file as f:
             _log.debug("Writing data to '{}'".format(tmp_file.name))
-            f.write('>test\n')
+            m = re.search(RE_FASTA_DESCRIPTION, sequence)
+            if not m:
+                f.write('>Input\n')
+            else:
+                f.write(m.group())
+                sequence = re.sub(RE_FASTA_DESCRIPTION, '', sequence)
             # The fasta format recommends that all lines be less than 80 chars.
             f.write(textwrap.fill(sequence, 79))
 

@@ -74,6 +74,19 @@ class TestTasks(object):
                                                  '-d', ANY])
 
     @patch('subprocess.check_output')
+    def test_mkhssp_from_fasta(self, mock_subprocess):
+        mock_subprocess.return_value = "output"
+
+        from xssp_rest.tasks import mkhssp_from_sequence
+        result = mkhssp_from_sequence.delay('>test\nseq', 'hssp_stockholm')
+
+        eq_(result.get(), "output")
+        mock_subprocess.assert_called_once_with(['mkhssp',
+                                                 '-i', ANY,
+                                                 '-d', ANY,
+                                                 '-d', ANY])
+
+    @patch('subprocess.check_output')
     def test_mkhssp_from_sequence_hssp_hssp(self, mock_subprocess):
         mock_subprocess.side_effect = ["output1", "output2"]
 
