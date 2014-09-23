@@ -1,3 +1,13 @@
+# 3.0.1 (23-09-2014)
+
+	* Nothing appears in the logs in production (#46)
+	* Warn users when using sequence/FASTA input for HSSP alignments (#45)
+	* Switch input and output order (#43)
+	* Validate PDB id input (#42)
+	* Disallow invalid input combinations (#41)
+	* Sequence input should only allow characters (#40)
+	* Add help page (#3)
+
 # 3.0.0 (04-09-2014)
 
 	* Rewrite input form (#35)

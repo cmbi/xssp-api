@@ -28,8 +28,8 @@ def index():
             raise ValueError("Unexpected input type '{}'".format(
                 form.input_type.data))
 
-        # Create and run the job via the strategy for the given input and output
-        # types.
+        # Create and run the job via the strategy for the given input and
+        # output types.
         _log.debug("Input type '{}' and output type '{}'".format(
             form.input_type.data, form.output_type.data))
 

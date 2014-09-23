@@ -51,7 +51,7 @@ def create_app(settings=None):
                               "Time: %(asctime)s\n" +
                               "Message:\n" +
                               "%(message)s"))
-    elif app.debug and not app.testing:
+    elif not app.testing:
         # Only log to the console during development and production, but not
         # during testing.
         ch = logging.StreamHandler()

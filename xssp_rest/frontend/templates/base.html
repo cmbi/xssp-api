@@ -14,7 +14,9 @@
     <script src="{{ url_for('static',
                             filename='libs/bootstrap/dist/js/bootstrap.min.js') }}">
     </script>
-
+    <script src="{{ url_for('static',
+                            filename='libs/bootstrap-tour/build/js/bootstrap-tour.js') }}">
+    </script>
     <script src="{{ url_for('static',
                             filename='libs/highlightjs/highlight.pack.js') }}">
     </script>
@@ -23,6 +25,10 @@
     <link rel="stylesheet"
           href="{{ url_for('static',
                            filename='libs/bootstrap/dist/css/bootstrap.min.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static',
+                           filename='libs/bootstrap-tour/build/css/bootstrap-tour.min.css') }}">
 
     <link rel="stylesheet"
           href="{{ url_for('static',
@@ -45,6 +51,9 @@
           </a>
         </div>
         <ul class="nav navbar-nav navbar-right">
+          <li>
+            <a id="start_tour" href="#">Help</a>
+          </li>
           <li>
             <a href="{{ url_for('xssp.api_doc') }}">API</a>
           </li>
