@@ -1,3 +1,11 @@
+# 3.0.2 (23-09-2014)
+
+	* Allow FASTA input in sequence field (#44)
+	* Allow whitespace, lowercase, sequence numbers in sequence field (#47)
+	* Improve sequence/FASTA input warning for HSSP alignments (#45)
+	* Nothing appears in the logs in production (#46)
+	* Add PDB_REDO and FASTA help to tour info (#33)
+
 # 3.0.1 (23-09-2014)
 
 	* Nothing appears in the logs in production (#46)
