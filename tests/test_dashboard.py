@@ -75,7 +75,6 @@ class TestDashboard(object):
                                       'sequence': test_sequence},
                            follow_redirects=True)
         eq_(rv.status_code, 200)
-        print rv.data
         assert "Must be at least 25 amino acids long" in rv.data
 
     @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
