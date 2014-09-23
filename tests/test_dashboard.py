@@ -18,57 +18,84 @@ class TestDashboard(object):
     def test_index(self):
         rv = self.app.get('/')
         eq_(rv.status_code, 200)
-        assert "Select the output type" in rv.data
 
-    def test_index_post_empty_form(self):
-        rv = self.app.post('/', data={'type_': 'hssp_from_pdb'})
-        eq_(rv.status_code, 200)
-        assert "required if &#39;file_&#39; is not provided" in rv.data
-        assert "required if &#39;data&#39; is not provided" in rv.data
-
-    def test_index_post_invalid_method(self):
-        rv = self.app.post('/', data={'type_': 'not-a-real-value',
-                                      'data': 'not-real-data'})
-        eq_(rv.status_code, 200)
-        assert "Not a valid choice" in rv.data
-
-    @patch('xssp_rest.frontend.dashboard.views.create_hssp')
-    def test_index_post_manual_data(self, mock_create_hssp):
-        mock_create_hssp.return_value.id = 12345
-        rv = self.app.post('/', data={'type_': 'hssp_from_pdb',
-                                      'data': 'not-real-data'},
-                           follow_redirects=True)
-        eq_(rv.status_code, 200)
-        assert "Please wait while your request is processed" in rv.data
-        mock_create_hssp.assert_called_once_with('pdb', 'not-real-data')
-
-    @patch('xssp_rest.frontend.dashboard.views.create_hssp')
-    def test_index_post_file_data(self, mock_create_hssp):
-        mock_create_hssp.return_value.id = 12345
-        rv = self.app.post('/', data={'type_': 'hssp_from_pdb',
+    @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
+    def test_index_post_hssp_from_pdb(self, mock_call):
+        mock_call.return_value = 12345
+        rv = self.app.post('/', data={'input_type': 'pdb_file',
+                                      'output_type': 'hssp_hssp',
                                       'file_': (StringIO('not-real-data'),
                                                 'fake.pdb')},
                            follow_redirects=True)
         eq_(rv.status_code, 200)
         assert "Please wait while your request is processed" in rv.data
-        mock_create_hssp.assert_called_once_with('pdb', 'not-real-data')
+        mock_call.assert_called_once_with('not-real-data')
 
-    @patch('xssp_rest.frontend.dashboard.views.create_hssp')
-    def test_index_post_hssp_from_sequence(self, mock_create_hssp):
-        mock_create_hssp.return_value.id = 12345
-        rv = self.app.post('/', data={'type_': 'hssp_from_sequence',
-                                      'data': 'not-real-seq'},
+    @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
+    def test_index_post_hssp_from_sequence(self, mock_call):
+        mock_call.return_value = 12345
+        test_sequence = 'ACDEFGHIKLMNPQRSTVWXYACDEFGHIKLMNPQRSTVWXY'
+        rv = self.app.post('/', data={'input_type': 'sequence',
+                                      'output_type': 'hssp_hssp',
+                                      'sequence': test_sequence},
                            follow_redirects=True)
         eq_(rv.status_code, 200)
         assert "Please wait while your request is processed" in rv.data
-        mock_create_hssp.assert_called_once_with('seq', 'not-real-seq')
+        mock_call.assert_called_once_with(test_sequence)
 
-    @patch('xssp_rest.frontend.dashboard.views.create_dssp')
-    def test_index_post_dssp_from_pdb(self, mock_create_dssp):
-        mock_create_dssp.return_value.id = 12345
-        rv = self.app.post('/', data={'type_': 'dssp_from_pdb',
-                                      'data': 'not-real-pdb'},
+    @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
+    def test_index_post_hssp_from_sequence_no_input(self, mock_call):
+        mock_call.return_value = 12345
+        rv = self.app.post('/', data={'input_type': 'sequence',
+                                      'output_type': 'hssp_hssp',
+                                      'sequence': None},
+                           follow_redirects=True)
+        eq_(rv.status_code, 200)
+        assert "This field is required if &#39;pdb_id&#39; and " + \
+               "&#39;file_&#39; have not been provided" in rv.data
+
+    @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
+    def test_index_post_hssp_from_sequence_invalid_aa(self, mock_call):
+        mock_call.return_value = 12345
+        test_sequence = 'BJOZ'
+        rv = self.app.post('/', data={'input_type': 'sequence',
+                                      'output_type': 'hssp_hssp',
+                                      'sequence': test_sequence},
+                           follow_redirects=True)
+        eq_(rv.status_code, 200)
+        assert 'This field only accepts 1-letter codes from the set ' + \
+               '&#34;ACDEFGHIKLMNPQRSTVWXY&#34;' in rv.data
+
+    @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
+    def test_index_post_hssp_from_sequence_invalid_length(self, mock_call):
+        mock_call.return_value = 12345
+        test_sequence = 'ACDEFGHIKLMNPQRSTVWXY'
+        rv = self.app.post('/', data={'input_type': 'sequence',
+                                      'output_type': 'hssp_hssp',
+                                      'sequence': test_sequence},
+                           follow_redirects=True)
+        eq_(rv.status_code, 200)
+        assert "Must be at least 25 amino acids long" in rv.data
+
+    @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
+    def test_index_post_dssp_from_pdb(self, mock_call):
+        mock_call.return_value = 12345
+        rv = self.app.post('/', data={'input_type': 'pdb_file',
+                                      'output_type': 'dssp',
+                                      'file_': (StringIO('not-real-pdb'),
+                                                'fake.pdb')},
                            follow_redirects=True)
         eq_(rv.status_code, 200)
         assert "Please wait while your request is processed" in rv.data
-        mock_create_dssp.assert_called_once_with('pdb', 'not-real-pdb')
+        mock_call.assert_called_once_with('not-real-pdb')
+
+    @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
+    def test_index_post_dssp_from_pdb_no_input(self, mock_call):
+        mock_call.return_value = 12345
+        rv = self.app.post('/', data={'input_type': 'pdb_file',
+                                      'output_type': 'dssp',
+                                      'file_': (None, None)},
+                           follow_redirects=True)
+        eq_(rv.status_code, 200)
+        assert "This field is required if &#39;pdb_id&#39; and " + \
+               "&#39;sequence&#39; have not been provided" in rv.data

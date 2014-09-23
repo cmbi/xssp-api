@@ -12,8 +12,21 @@
     <div class="form-group">
       <span class="label label-default" id="status">QUEUED</span>
     </div>
-    <textarea class="form-control" id="output" style="font-family: monospace;"
-      rows=30 readonly></textarea>
+    <textarea class="form-control" id="output"
+              style="font-family: monospace; font-size: 8pt;"
+              rows=30 readonly>
+    </textarea>
+    <br>
+    <p>
+      Doing this often? Consider using the
+      <a href='{{ url_for('xssp.api_doc') }}'>API</a> to automate the process.
+      Check out the <a href='{{ url_for('xssp.api_example') }}'>simple
+      ready-to-use example</a>.
+    </p>
+    <p>
+      Instructions for downloading existing DSSP files using rsync can be found
+      <a href="http://swift.cmbi.ru.nl/gv/dssp">here</a>.
+    </p>
   </div>
 </div>
 
@@ -24,7 +37,7 @@
   $(document).ready(function() {
       var intervalId = setInterval(function(){
         $.getJSON(
-          "/api/job/{{ method }}/{{ celery_id }}/status/",
+          "{{ url_for('xssp.get_xssp_status', input_type=input_type, output_type=output_type, id=celery_id) }}",
           function(data) {
             $('#status').text(data['status']);
 
@@ -45,7 +58,7 @@
               $('#status').removeClass("label-default label-info")
                           .addClass("label-success");
               $.getJSON(
-                "/api/job/{{ method }}/{{ celery_id }}/result/",
+                  "{{ url_for('xssp.get_xssp_result', input_type=input_type, output_type=output_type, id=celery_id) }}",
                 function(data) {
                   $('#output').text(data['result']);
                 });

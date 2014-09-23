@@ -3,96 +3,102 @@ import json
 import re
 
 from mock import patch
-from nose.tools import eq_, ok_
+from nose.tools import eq_, ok_, raises
 
 from xssp_rest.factory import create_app
 
 
-class TestViews(object):
+class TestEndpoints(object):
 
     @classmethod
     def setup_class(cls):
-        cls.flask_app = create_app({'TESTING': True})
+        cls.flask_app = create_app({'TESTING': True,
+                                    'SECRET_KEY': 'testing',
+                                    'WTF_CSRF_ENABLED': False})
         cls.app = cls.flask_app.test_client()
 
-    @patch('xssp_rest.tasks.mkdssp_from_pdb.delay')
-    def test_create_dssp_from_pdb(self, mock_delay):
-        mock_delay.return_value.id = 12345
-        rv = self.app.post('/api/create/dssp/from_pdb/',
-                           data={'pdb_content': ''})
+    @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
+    def test_create_xssp_pdb_file_dssp(self, mock_call):
+        mock_call.return_value = 12345
+        rv = self.app.post('/api/create/pdb_file/dssp/',
+                           data={'data': 'not-real-data'})
+        print rv.data
         eq_(rv.status_code, 202)
         response = json.loads(rv.data)
         ok_('id' in response)
         eq_(response['id'], 12345)
+        mock_call.assert_called_once_with('not-real-data')
 
-    def test_create_dssp_from_pdb_no_pdb_content(self):
-        rv = self.app.post('/api/create/dssp/from_pdb/')
+    def test_create_xssp_pdb_file_dssp_no_data(self):
+        rv = self.app.post('/api/create/pdb_file/dssp/')
         eq_(rv.status_code, 400)
 
-    @patch('xssp_rest.tasks.mkhssp_from_pdb.delay')
-    def test_create_hssp_from_pdb(self, mock_delay):
-        mock_delay.return_value.id = 12345
-        rv = self.app.post('/api/create/hssp/from_pdb/',
-                           data={'pdb_content': ''})
+    @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
+    def test_create_xssp_pdb_file_hssp(self, mock_call):
+        mock_call.return_value = 12345
+        rv = self.app.post('/api/create/pdb_file/hssp_hssp/',
+                           data={'data': 'not-real-data'})
         eq_(rv.status_code, 202)
         response = json.loads(rv.data)
         ok_('id' in response)
         eq_(response['id'], 12345)
+        mock_call.assert_called_once_with('not-real-data')
 
-    def test_create_hssp_from_pdb_no_pdb_content(self):
-        rv = self.app.post('/api/create/hssp/from_pdb/')
+    def test_create_xssp_pdb_file_hssp_no_data(self):
+        rv = self.app.post('/api/create/pdb_file/hssp/')
         eq_(rv.status_code, 400)
 
-    @patch('xssp_rest.tasks.mkhssp_from_sequence.delay')
-    def test_create_hssp_from_sequence(self, mock_delay):
-        mock_delay.return_value.id = 12345
-        rv = self.app.post('/api/create/hssp/from_sequence/',
-                           data={'sequence': ''})
+    @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
+    def test_create_xssp_sequence_hssp(self, mock_call):
+        mock_call.return_value = 12345
+        rv = self.app.post('/api/create/sequence/hssp_hssp/',
+                           data={'data': 'not-a-real-sequence'})
         eq_(rv.status_code, 202)
         response = json.loads(rv.data)
         ok_('id' in response)
         eq_(response['id'], 12345)
+        mock_call.assert_called_once_with('not-a-real-sequence')
 
-    def test_create_hssp_from_sequence_no_sequence(self):
-        rv = self.app.post('/api/create/hssp/from_sequence/')
+    def test_create_xssp_sequence_hssp_no_data(self):
+        rv = self.app.post('/api/create/sequence/hssp_hssp/')
         eq_(rv.status_code, 400)
 
     @patch('xssp_rest.tasks.mkdssp_from_pdb.AsyncResult')
-    def test_get_job_status_for_dssp_from_pdb(self, mock_result):
+    def test_get_xssp_status_pdb_file_dssp(self, mock_result):
         mock_result.return_value.failed.return_value = False
         mock_result.return_value.status = 'SUCCESS'
-        rv = self.app.get('/api/job/dssp_from_pdb/12345/status/')
+        rv = self.app.get('/api/status/pdb_file/dssp/12345/')
         eq_(rv.status_code, 200)
         response = json.loads(rv.data)
         ok_('status' in response)
         eq_(response['status'], 'SUCCESS')
 
     @patch('xssp_rest.tasks.mkhssp_from_pdb.AsyncResult')
-    def test_get_job_status_for_hssp_from_pdb(self, mock_result):
+    def test_get_xssp_status_pdb_file_hssp(self, mock_result):
         mock_result.return_value.failed.return_value = False
         mock_result.return_value.status = 'SUCCESS'
-        rv = self.app.get('/api/job/hssp_from_pdb/12345/status/')
+        rv = self.app.get('/api/status/pdb_file/hssp_hssp/12345/')
         eq_(rv.status_code, 200)
         response = json.loads(rv.data)
         ok_('status' in response)
         eq_(response['status'], 'SUCCESS')
 
     @patch('xssp_rest.tasks.mkhssp_from_sequence.AsyncResult')
-    def test_get_job_status_for_hssp_from_sequence(self, mock_result):
+    def test_get_xssp_status_sequence_hssp(self, mock_result):
         mock_result.return_value.failed.return_value = False
         mock_result.return_value.status = 'SUCCESS'
-        rv = self.app.get('/api/job/hssp_from_sequence/12345/status/')
+        rv = self.app.get('/api/status/sequence/hssp_hssp/12345/')
         eq_(rv.status_code, 200)
         response = json.loads(rv.data)
         ok_('status' in response)
         eq_(response['status'], 'SUCCESS')
 
     @patch('xssp_rest.tasks.mkhssp_from_sequence.AsyncResult')
-    def test_get_job_status_failed_message(self, mock_result):
+    def test_get_xssp_status_sequence_hssp_failed_message(self, mock_result):
         mock_result.return_value.failed.return_value = True
         mock_result.return_value.status = 'FAILED'
         mock_result.return_value.traceback = 'Error message'
-        rv = self.app.get('/api/job/hssp_from_sequence/12345/status/')
+        rv = self.app.get('/api/status/sequence/hssp_hssp/12345/')
         eq_(rv.status_code, 200)
         response = json.loads(rv.data)
         ok_('status' in response)
@@ -100,39 +106,51 @@ class TestViews(object):
         ok_('message' in response)
         eq_(response['message'], 'Error message')
 
-    def test_get_job_status_for_unknown_job_type(self):
-        rv = self.app.get('/api/job/unknown/12345/status/')
+    @raises(ValueError)
+    def test_get_xssp_status_unknown_input_type(self):
+        rv = self.app.get('/api/status/unknown/hssp_hssp/12345/')
+        eq_(rv.status_code, 400)
+
+    @raises(ValueError)
+    def test_get_xssp_status_unknown_output_type(self):
+        rv = self.app.get('/api/status/sequence/unknown/12345/')
         eq_(rv.status_code, 400)
 
     @patch('xssp_rest.tasks.mkdssp_from_pdb.AsyncResult')
-    def test_get_job_result_for_dssp_from_pdb(self, mock_result):
+    def test_get_xssp_result_pdb_file_dssp(self, mock_result):
         mock_result.return_value.get.return_value = 'content-of-result'
-        rv = self.app.get('/api/job/dssp_from_pdb/12345/result/')
+        rv = self.app.get('/api/result/pdb_file/dssp/12345/')
         eq_(rv.status_code, 200)
         response = json.loads(rv.data)
         ok_('result' in response)
         eq_(response['result'], 'content-of-result')
 
     @patch('xssp_rest.tasks.mkhssp_from_pdb.AsyncResult')
-    def test_get_job_result_for_hssp_from_pdb(self, mock_result):
+    def test_get_xssp_result_pdb_file_hssp(self, mock_result):
         mock_result.return_value.get.return_value = 'content-of-result'
-        rv = self.app.get('/api/job/hssp_from_pdb/12345/result/')
+        rv = self.app.get('/api/result/pdb_file/hssp_hssp/12345/')
         eq_(rv.status_code, 200)
         response = json.loads(rv.data)
         ok_('result' in response)
         eq_(response['result'], 'content-of-result')
 
     @patch('xssp_rest.tasks.mkhssp_from_sequence.AsyncResult')
-    def test_get_job_result_for_hssp_from_sequence(self, mock_result):
+    def test_get_xssp_result_sequence_hssp(self, mock_result):
         mock_result.return_value.get.return_value = 'content-of-result'
-        rv = self.app.get('/api/job/hssp_from_sequence/12345/result/')
+        rv = self.app.get('/api/result/sequence/hssp_hssp/12345/')
         eq_(rv.status_code, 200)
         response = json.loads(rv.data)
         ok_('result' in response)
         eq_(response['result'], 'content-of-result')
 
-    def test_get_job_result_for_unknown_job_type(self):
-        rv = self.app.get('/api/job/unknown/12345/result/')
+    @raises(ValueError)
+    def test_get_xssp_result_unknown_input_type(self):
+        rv = self.app.get('/api/result/unknown/hssp_hssp/12345/')
+        eq_(rv.status_code, 400)
+
+    @raises(ValueError)
+    def test_get_xssp_result_unknown_output_type(self):
+        rv = self.app.get('/api/result/sequence/unknown/12345/')
         eq_(rv.status_code, 400)
 
     def test_api_doc(self):
@@ -141,7 +159,7 @@ class TestViews(object):
         rv = self.app.get('/api/')
         eq_(rv.status_code, 200)
 
-        excluded_fs = ['api_doc']
+        excluded_fs = ['api_doc', 'api_example']
         for f_name, f in inspect.getmembers(endpoints, inspect.isfunction):
             mod_name = inspect.getmodule(f).__name__
             if "xssp_rest.frontend.api.endpoints" in mod_name and \

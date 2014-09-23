@@ -1,9 +1,10 @@
 {
   "name": "xssp-rest",
-  "version": "2.1.1",
+  "version": "3.0.2",
   "homepage": "https://github.com/cmbi/xssp-rest",
   "authors": [
-    "Jon Black <Jon.Black@radboudumc.nl>"
+    "Jon Black <Jon.Black@radboudumc.nl>",
+    "Wouter Touw <Wouter.Touw@radboudumc.nl>"
   ],
   "license": "Unknown",
   "private": true,
@@ -16,6 +17,8 @@
     "tests"
   ],
   "dependencies": {
-    "bootstrap": "~3.2.0"
+    "bootstrap": "~3.2.0",
+    "highlightjs": "~8.0.0",
+    "bootstrap-tour": "~0.9.3"
   }
 }

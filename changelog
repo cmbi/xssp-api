@@ -1,3 +1,40 @@
+# 3.0.2 (23-09-2014)
+
+	* Allow FASTA input in sequence field (#44)
+	* Allow whitespace, lowercase, sequence numbers in sequence field (#47)
+	* Improve sequence/FASTA input warning for HSSP alignments (#45)
+	* Nothing appears in the logs in production (#46)
+	* Add PDB_REDO and FASTA help to tour info (#33)
+
+# 3.0.1 (23-09-2014)
+
+	* Nothing appears in the logs in production (#46)
+	* Warn users when using sequence/FASTA input for HSSP alignments (#45)
+	* Switch input and output order (#43)
+	* Validate PDB id input (#42)
+	* Disallow invalid input combinations (#41)
+	* Sequence input should only allow characters (#40)
+	* Add help page (#3)
+
+# 3.0.0 (04-09-2014)
+
+	* Rewrite input form (#35)
+	* Only allow PDB id to be entered (#34)
+	* Reference the api on the output page (#32)
+	* Use repository example code on example page (#31)
+	* Add details of how to run the example python code (#30)
+	* Add option for accession code (#18)
+
+# 2.2.0 (01-09-2014)
+
+	* Clearing the form submits it (#28)
+	* Make xssp-rest available on Internet (#27)
+	* Add error handler for exceptions that aren't dealt with (#26)
+	* Email log handler for production (#25)
+	* REST api examples on web page (#24)
+	* DSSP output wraps in textarea (#23)
+	* Remove API doc from README (#22)
+
 # 2.1.1 (18-08-2014)
 
 	* Fix page not found when behind proxy (#17)
