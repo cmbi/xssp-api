@@ -88,6 +88,17 @@ def test_n_amino_acids():
     eq_(NAminoAcids(25)(mock_form, mock_field), None)
 
 
+def test_n_amino_acids_fasta():
+    mock_field = Mock()
+    mock_field.data = '>test\r\n1 ACDEFGHIKLMNPQRSTVWXY 22acdefghik\r\n'
+    mock_field.errors = []
+
+    mock_form = Mock()
+    mock_form._fields = {'field1': mock_field}
+
+    eq_(NAminoAcids(25)(mock_form, mock_field), None)
+
+
 def test_n_amino_acids_none():
     mock_field = Mock()
     mock_field.data = ''
@@ -129,3 +140,49 @@ def test_n_amino_acids_invalid_length():
         NAminoAcids(25)(mock_form, mock_field)
     except ValidationError as ve:
         eq_(ve.message, 'Must be at least 25 amino acids long.')
+
+
+def test_n_amino_acids_invalid_multi_fasta():
+    mock_field = Mock()
+    mock_field.data = '>test0\nACDEFGHIKLMNPQRSTVWXY\n>test1\nACDEFGHIK'
+    mock_field.errors = []
+
+    mock_form = Mock()
+    mock_form._fields = {'field1': mock_field}
+
+    expected_message = u'Multiple sequence FASTA input ' + \
+                       'is currently not supported. ' + \
+                       'The first line of FASTA input should start ' + \
+                       'with ">" followed by a description.'
+    try:
+        NAminoAcids(25)(mock_form, mock_field)
+    except ValidationError as ve:
+        eq_(ve.message, expected_message)
+
+
+def test_n_amino_acids_invalid_fasta_description():
+    mock_field = Mock()
+    mock_field.data = '>\nACDEFGHIK'
+    mock_field.errors = []
+
+    mock_form = Mock()
+    mock_form._fields = {'field1': mock_field}
+
+    expected_message = u'Multiple sequence FASTA input ' + \
+                       'is currently not supported. ' + \
+                       'The first line of FASTA input should start ' + \
+                       'with ">" followed by a description.'
+    try:
+        NAminoAcids(25)(mock_form, mock_field)
+    except ValidationError as ve:
+        eq_(ve.message, expected_message)
+
+    mock_field.data = '> test\nACDEFGHIK'
+
+    mock_form = Mock()
+    mock_form._fields = {'field1': mock_field}
+
+    try:
+        NAminoAcids(25)(mock_form, mock_field)
+    except ValidationError as ve:
+        eq_(ve.message, expected_message)
