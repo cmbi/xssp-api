@@ -1,5 +1,5 @@
 from mock import Mock
-from nose.tools import eq_, ok_, raises
+from nose.tools import eq_, raises
 from wtforms.validators import StopValidation
 
 from xssp_rest.frontend.validators import (NAminoAcids, NotRequiredIfOneOf,
@@ -79,7 +79,7 @@ def test_not_required_if_one_of_no_field():
 
 def test_n_amino_acids():
     mock_field = Mock()
-    mock_field.data = 'ACDEFGHIKLMNPQRSTVWXY ACDEFGHIKLMNPQRSTVWXY\n\tA  C'
+    mock_field.data = '1 ACDEFGHIKLMNPQRSTVWXY 22acdefghiklmnpqrstvwxy\n\tA  C'
     mock_field.errors = []
 
     mock_form = Mock()
