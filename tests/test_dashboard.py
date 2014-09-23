@@ -55,7 +55,7 @@ class TestDashboard(object):
                "&#39;file_&#39; have not been provided" in rv.data
 
     @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
-    def test_index_post_hssp_from_sequence_invalid(self, mock_call):
+    def test_index_post_hssp_from_sequence_invalid_aa(self, mock_call):
         mock_call.return_value = 12345
         test_sequence = 'BJOZ'
         rv = self.app.post('/', data={'input_type': 'sequence',
@@ -63,10 +63,20 @@ class TestDashboard(object):
                                       'sequence': test_sequence},
                            follow_redirects=True)
         eq_(rv.status_code, 200)
-        print rv.data
-        assert 'Can only contain residues from the set ' + \
+        assert 'This field only accepts 1-letter codes from the set ' + \
                '&#34;ACDEFGHIKLMNPQRSTVWXY&#34;' in rv.data
-        assert "Must be at least 25 residues long" in rv.data
+
+    @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
+    def test_index_post_hssp_from_sequence_invalid_length(self, mock_call):
+        mock_call.return_value = 12345
+        test_sequence = 'ACDEFGHIKLMNPQRSTVWXY'
+        rv = self.app.post('/', data={'input_type': 'sequence',
+                                      'output_type': 'hssp_hssp',
+                                      'sequence': test_sequence},
+                           follow_redirects=True)
+        eq_(rv.status_code, 200)
+        print rv.data
+        assert "Must be at least 25 amino acids long" in rv.data
 
     @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
     def test_index_post_dssp_from_pdb(self, mock_call):
