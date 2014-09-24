@@ -1,2 +1,2 @@
 #!/bin/bash
-nosetests tests/integration/
+nosetests --nologcapture tests/integration/
