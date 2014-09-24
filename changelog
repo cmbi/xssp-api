@@ -1,3 +1,7 @@
+# 3.0.3 (24-09-2014)
+
+	* Convert uppercase PDB id to lowercase in paths (#50)
+
 # 3.0.2 (23-09-2014)
 
 	* Allow FASTA input in sequence field (#44)
