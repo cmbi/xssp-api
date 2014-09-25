@@ -201,8 +201,8 @@ def get_task(input_type, output_type):
 
     If the combination is not allowed, a ValueError is raised.
     """
-    _log.info("Getting task for input '{}'" +
-              "and output '{}'".format(input_type, output_type))
+    _log.info("Getting task for input '{}' and output '{}'".format(
+        input_type, output_type))
 
     if input_type == 'pdb_id':
         if output_type == 'dssp':
