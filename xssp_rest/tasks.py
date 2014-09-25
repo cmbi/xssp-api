@@ -136,6 +136,7 @@ def mkhssp_from_sequence(sequence, output_format):
 
 @celery_app.task
 def get_hssp(pdb_id, output_type):
+    pdb_id = pdb_id.lower()
     _log.info("Getting hssp data for '{}' in format '{}'".format(pdb_id,
                                                                  output_type))
 
@@ -161,6 +162,7 @@ def get_hssp(pdb_id, output_type):
 
 @celery_app.task
 def get_dssp(pdb_id):
+    pdb_id = pdb_id.lower()
     _log.info("Getting dssp data for '{}'".format(pdb_id))
 
     # Determine path to hssp file and check that it exists.
@@ -177,6 +179,7 @@ def get_dssp(pdb_id):
 
 @celery_app.task
 def get_dssp_redo(pdb_redo_id):
+    pdb_redo_id = pdb_redo_id.lower()
     _log.info("Getting dssp data for redo '{}'".format(pdb_redo_id))
 
     # Determine path to hssp file and check that it exists.
