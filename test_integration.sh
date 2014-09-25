@@ -1,2 +1,2 @@
 #!/bin/bash
-nosetests --nologcapture tests/integration/
+nosetests --with-xunit --nologcapture tests/integration/
