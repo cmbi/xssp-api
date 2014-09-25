@@ -1,6 +1,11 @@
 import logging
+import re
 
-from wtforms.validators import Required, StopValidation
+from wtforms.validators import Required, StopValidation, ValidationError
+
+
+RE_FASTA_DESCRIPTION = re.compile(r"^>\S.*\n")
+RE_SEQ = re.compile(r"^[XARNDCEQGHILKMFPSTWYVxarndceqghilkmfpstwyv]+$")
 
 
 _log = logging.getLogger(__name__)
@@ -18,7 +23,7 @@ class NotRequiredIfOneOf(Required):
         self.other_field_names = other_field_names
 
         self.message = ("This field is required if '{}' "
-                        "{} not been provided").format(
+                        "{} not been provided.").format(
                             "' and '".join(other_field_names),
                             "have" if len(other_field_names) > 0 else "has")
 
@@ -37,3 +42,50 @@ class NotRequiredIfOneOf(Required):
                 raise StopValidation()
 
         super(NotRequiredIfOneOf, self).__call__(form, field)
+
+
+class NAminoAcids(object):
+    """
+    Validate a protein sequence field.
+
+    raise a ValidationError if less than min amino acids have been given.
+
+    Amino Acids can be from the set ACDEFGHIKLMNPQRSTVWXY.
+    Single sequence FASTA and lowercase 1-letter codes are also accepted.
+    Whitespace, sequence numbers, and asteriks are ignored.
+    """
+
+    def __init__(self, min=-1, len_message=None, set_message=None,
+                 fasta_message=None):
+        self.min = min
+        if not len_message:
+            len_message = u'Must be at least {0:d} amino acids long.'.format(
+                min)
+        if not set_message:
+            set_message = u'This field only accepts 1-letter codes from ' + \
+                          'the set "ACDEFGHIKLMNPQRSTVWXY".'
+        if not fasta_message:
+            fasta_message = u'Multiple sequence FASTA input ' + \
+                            'is currently not supported. ' + \
+                            'The first line of FASTA input should start ' + \
+                            'with ">" followed by a description.'
+        self.len_message = len_message
+        self.set_message = set_message
+        self.fasta_message = fasta_message
+
+    def __call__(self, form, field):
+        if not field.data:
+            raise ValidationError(self.len_message)
+
+        # Remove the FASTA description line if present
+        seq = re.sub(RE_FASTA_DESCRIPTION, '', field.data)
+        if re.search('>', seq):
+            raise ValidationError(self.fasta_message)
+
+        # Remove whitespace, sequence numbers, and asteriks from the input
+        seq = re.sub('\s+|\d+|\*', '', seq)
+        if not re.search(RE_SEQ, seq):
+            raise ValidationError(self.set_message)
+
+        if len(seq) < self.min:
+            raise ValidationError(self.len_message)
