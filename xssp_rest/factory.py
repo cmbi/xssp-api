@@ -29,13 +29,15 @@ def create_app(settings=None):
     app.logger_name = "nowhere"
     app.logger
 
-    # Configure email logging. It is somewhat dubious to get _log from the
-    # root package, but I can't see a better way. Having the email handler
-    # configured at the root means all child loggers inherit it.
+    # Configure logging.
+    #
+    # It is somewhat dubious to get _log from the root package, but I can't see
+    # a better way. Having the email handler configured at the root means all
+    # child loggers inherit it.
     from xssp_rest import _log as root_logger
 
+    # Only log to email during production.
     if not app.debug and not app.testing:  # pragma: no cover
-        # Only log to email during production.
         mail_handler = SMTPHandler((app.config["MAIL_SERVER"],
                                    app.config["MAIL_SMTP_PORT"]),
                                    app.config["MAIL_FROM"],
@@ -51,18 +53,21 @@ def create_app(settings=None):
                               "Time: %(asctime)s\n" +
                               "Message:\n" +
                               "%(message)s"))
-    elif not app.testing:
-        # Only log to the console during development and production, but not
-        # during testing.
+
+    # Only log to the console during development and production, but not
+    # during testing.
+    if not app.testing:
         ch = logging.StreamHandler()
         formatter = logging.Formatter(
             '%(asctime)s - %(levelname)s - %(message)s')
         ch.setFormatter(formatter)
         root_logger.addHandler(ch)
 
+    # Only log debug messages during development
+    if app.debug:
         root_logger.setLevel(logging.DEBUG)
     else:
-        root_logger.setLevel(logging.DEBUG)
+        root_logger.setLevel(logging.INFO)
 
     # Use ProxyFix to correct URL's when redirecting.
     from xssp_rest.middleware import ReverseProxied
