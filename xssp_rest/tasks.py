@@ -36,7 +36,7 @@ def mkdssp_from_pdb(pdb_content):
         _log.info("Calling mkdssp")
         args = ['mkdssp', '-i', tmp_file.name]
         _log.debug("Running command '{}'".format(args))
-        output = subprocess.check_output(args)
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         _log.error("Error: {}".format(e.output))
         raise RuntimeError(e.output)
@@ -70,7 +70,7 @@ def mkhssp_from_pdb(pdb_content, output_format):
                            flask_app.config['XSSP_DATABANKS'],
                            []))
         _log.debug("Running command '{}'".format(args))
-        output = subprocess.check_output(args)
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
 
         if output_format == 'hssp_hssp':
             return _stockholm_to_hssp(output)
@@ -120,7 +120,7 @@ def mkhssp_from_sequence(sequence, output_format):
                            []))
         try:
             _log.debug("Running command '{}'".format(args))
-            output = subprocess.check_output(args)
+            output = subprocess.check_output(args, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             _log.error("Error: {}".format(e.output))
             raise RuntimeError(e.output)
@@ -247,7 +247,7 @@ def _stockholm_to_hssp(stockholm_data):
         _log.info("Calling hsspconv")
         args = ['hsspconv', '-i', tmp_file.name]
         _log.debug("Running command '{}'".format(args))
-        output = subprocess.check_output(args)
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
 
         return output
     except subprocess.CalledProcessError as e:
