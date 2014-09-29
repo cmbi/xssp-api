@@ -33,9 +33,8 @@ def mkdssp_from_pdb(pdb_content):
             _log.debug("Writing data to '{}'".format(tmp_file.name))
             f.write(pdb_content)
 
-        _log.info("Calling mkdssp")
         args = ['mkdssp', '-i', tmp_file.name]
-        _log.debug("Running command '{}'".format(args))
+        _log.info("Running command '{}'".format(args))
         output = subprocess.check_output(args, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         _log.error("Error: {}".format(e.output))
@@ -64,12 +63,11 @@ def mkhssp_from_pdb(pdb_content, output_format):
             _log.debug("Writing data to '{}'".format(tmp_file.name))
             f.write(pdb_content)
 
-        _log.info("Calling mkhssp")
         args = ['mkhssp', '-i', tmp_file.name]
         args.extend(reduce(lambda l, a: l + ['-d', a],
                            flask_app.config['XSSP_DATABANKS'],
                            []))
-        _log.debug("Running command '{}'".format(args))
+        _log.info("Running command '{}'".format(args))
         output = subprocess.check_output(args, stderr=subprocess.STDOUT)
 
         if output_format == 'hssp_hssp':
@@ -113,13 +111,12 @@ def mkhssp_from_sequence(sequence, output_format):
             # The fasta format recommends that all lines be less than 80 chars.
             f.write(textwrap.fill(sequence, 79))
 
-        _log.info("Calling mkhssp")
         args = ['mkhssp', '-i', tmp_file.name]
         args.extend(reduce(lambda l, a: l + ['-d', a],
                            flask_app.config['XSSP_DATABANKS'],
                            []))
         try:
-            _log.debug("Running command '{}'".format(args))
+            _log.info("Running command '{}'".format(args))
             output = subprocess.check_output(args, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             _log.error("Error: {}".format(e.output))
