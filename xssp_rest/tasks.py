@@ -1,8 +1,8 @@
-import logging
-
 import bz2
+import logging
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import textwrap
@@ -16,8 +16,8 @@ from xssp_rest.frontend.validators import RE_FASTA_DESCRIPTION
 _log = logging.getLogger(__name__)
 
 
-@celery_app.task
-def mkdssp_from_pdb(pdb_content):
+@celery_app.task(bind=True)
+def mkdssp_from_pdb(self, pdb_content):
     """
     Creates a DSSP file from the given pdb content.
 
@@ -33,12 +33,17 @@ def mkdssp_from_pdb(pdb_content):
             _log.debug("Writing data to '{}'".format(tmp_file.name))
             f.write(pdb_content)
 
-        _log.info("Calling mkdssp")
         args = ['mkdssp', '-i', tmp_file.name]
-        _log.debug("Running command '{}'".format(args))
-        output = subprocess.check_output(args)
+        _log.info("Running command '{}'".format(args))
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         _log.error("Error: {}".format(e.output))
+        # Copy the tempfile so developers can access the pdb content to
+        # reproduce the error. The copied file is never deleted by xssp-rest.
+        error_pdb_path = os.path.join(tempfile.gettempdir(),
+                                      '{}.pdb'.format(self.request.id))
+        shutil.copyfile(tmp_file.name, error_pdb_path)
+        _log.info("Copied '{}' to '{}'".format(tmp_file.name, error_pdb_path))
         raise RuntimeError(e.output)
     finally:
         _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
@@ -47,8 +52,8 @@ def mkdssp_from_pdb(pdb_content):
     return output
 
 
-@celery_app.task
-def mkhssp_from_pdb(pdb_content, output_format):
+@celery_app.task(bind=True)
+def mkhssp_from_pdb(self, pdb_content, output_format):
     """
     Creates a HSSP file from the given pdb content.
 
@@ -64,13 +69,12 @@ def mkhssp_from_pdb(pdb_content, output_format):
             _log.debug("Writing data to '{}'".format(tmp_file.name))
             f.write(pdb_content)
 
-        _log.info("Calling mkhssp")
         args = ['mkhssp', '-i', tmp_file.name]
         args.extend(reduce(lambda l, a: l + ['-d', a],
                            flask_app.config['XSSP_DATABANKS'],
                            []))
-        _log.debug("Running command '{}'".format(args))
-        output = subprocess.check_output(args)
+        _log.info("Running command '{}'".format(args))
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
 
         if output_format == 'hssp_hssp':
             return _stockholm_to_hssp(output)
@@ -78,6 +82,12 @@ def mkhssp_from_pdb(pdb_content, output_format):
             return output
     except subprocess.CalledProcessError as e:
         _log.error("Error: {}".format(e.output))
+        # Copy the tempfile so developers can access the pdb content to
+        # reproduce the error. The copied file is never deleted by xssp-rest.
+        error_pdb_path = os.path.join(tempfile.gettempdir(),
+                                      '{}.pdb'.format(self.request.id))
+        shutil.copyfile(tmp_file.name, error_pdb_path)
+        _log.info("Copied '{}' to '{}'".format(tmp_file.name, error_pdb_path))
         raise RuntimeError(e.output)
     finally:
         _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
@@ -113,14 +123,13 @@ def mkhssp_from_sequence(sequence, output_format):
             # The fasta format recommends that all lines be less than 80 chars.
             f.write(textwrap.fill(sequence, 79))
 
-        _log.info("Calling mkhssp")
         args = ['mkhssp', '-i', tmp_file.name]
         args.extend(reduce(lambda l, a: l + ['-d', a],
                            flask_app.config['XSSP_DATABANKS'],
                            []))
         try:
-            _log.debug("Running command '{}'".format(args))
-            output = subprocess.check_output(args)
+            _log.info("Running command '{}'".format(args))
+            output = subprocess.check_output(args, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             _log.error("Error: {}".format(e.output))
             raise RuntimeError(e.output)
@@ -201,8 +210,8 @@ def get_task(input_type, output_type):
 
     If the combination is not allowed, a ValueError is raised.
     """
-    _log.info("Getting task for input '{}'" +
-              "and output '{}'".format(input_type, output_type))
+    _log.info("Getting task for input '{}' and output '{}'".format(
+        input_type, output_type))
 
     if input_type == 'pdb_id':
         if output_type == 'dssp':
@@ -247,7 +256,7 @@ def _stockholm_to_hssp(stockholm_data):
         _log.info("Calling hsspconv")
         args = ['hsspconv', '-i', tmp_file.name]
         _log.debug("Running command '{}'".format(args))
-        output = subprocess.check_output(args)
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
 
         return output
     except subprocess.CalledProcessError as e:

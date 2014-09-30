@@ -1,3 +1,10 @@
+# 3.0.5 (30-09-2014)
+
+	* Store pdb content when xssp fails (#55)
+	* Show executed command in celery logs during production (#54)
+	* Show errors reported by mkhssp and mkdssp (#53)
+	* Empty values in log message (#52)
+
 # 3.0.4 (25-09-2014)
 
 	* Nothing appears in the logs in production (#46)

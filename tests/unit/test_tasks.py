@@ -26,7 +26,8 @@ class TestTasks(object):
         result = mkdssp_from_pdb.delay('pdb-content')
 
         eq_(result.get(), "output")
-        mock_subprocess.assert_called_once_with(['mkdssp', '-i', ANY])
+        mock_subprocess.assert_called_once_with(['mkdssp', '-i', ANY],
+                                                stderr=ANY)
 
     @patch('subprocess.check_output')
     @raises(RuntimeError)
@@ -47,8 +48,8 @@ class TestTasks(object):
 
         eq_(result.get(), "output2")
         mock_subprocess.assert_has_calls([
-            call(['mkhssp', '-i', ANY, '-d', ANY, '-d', ANY]),
-            call(['hsspconv', '-i', ANY])])
+            call(['mkhssp', '-i', ANY, '-d', ANY, '-d', ANY], stderr=ANY),
+            call(['hsspconv', '-i', ANY], stderr=ANY)])
 
     @patch('subprocess.check_output')
     @raises(RuntimeError)
@@ -71,7 +72,7 @@ class TestTasks(object):
         mock_subprocess.assert_called_once_with(['mkhssp',
                                                  '-i', ANY,
                                                  '-d', ANY,
-                                                 '-d', ANY])
+                                                 '-d', ANY], stderr=ANY)
 
     @patch('subprocess.check_output')
     def test_mkhssp_from_fasta(self, mock_subprocess):
@@ -84,7 +85,7 @@ class TestTasks(object):
         mock_subprocess.assert_called_once_with(['mkhssp',
                                                  '-i', ANY,
                                                  '-d', ANY,
-                                                 '-d', ANY])
+                                                 '-d', ANY], stderr=ANY)
 
     @patch('subprocess.check_output')
     def test_mkhssp_from_sequence_hssp_hssp(self, mock_subprocess):
@@ -95,8 +96,8 @@ class TestTasks(object):
 
         eq_(result.get(), "output2")
         mock_subprocess.assert_has_calls([
-            call(['mkhssp', '-i', ANY, '-d', ANY, '-d', ANY]),
-            call(['hsspconv', '-i', ANY])])
+            call(['mkhssp', '-i', ANY, '-d', ANY, '-d', ANY], stderr=ANY),
+            call(['hsspconv', '-i', ANY], stderr=ANY)])
 
     @patch('subprocess.check_output')
     @raises(RuntimeError)
