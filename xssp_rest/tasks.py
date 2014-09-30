@@ -1,8 +1,8 @@
-import logging
-
 import bz2
+import logging
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import textwrap
@@ -16,8 +16,8 @@ from xssp_rest.frontend.validators import RE_FASTA_DESCRIPTION
 _log = logging.getLogger(__name__)
 
 
-@celery_app.task
-def mkdssp_from_pdb(pdb_content):
+@celery_app.task(bind=True)
+def mkdssp_from_pdb(self, pdb_content):
     """
     Creates a DSSP file from the given pdb content.
 
@@ -38,6 +38,12 @@ def mkdssp_from_pdb(pdb_content):
         output = subprocess.check_output(args, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         _log.error("Error: {}".format(e.output))
+        # Copy the tempfile so developers can access the pdb content to
+        # reproduce the error. The copied file is never deleted by xssp-rest.
+        error_pdb_path = os.path.join(tempfile.gettempdir(),
+                                      '{}.pdb'.format(self.request.id))
+        shutil.copyfile(tmp_file.name, error_pdb_path)
+        _log.info("Copied '{}' to '{}'".format(tmp_file.name, error_pdb_path))
         raise RuntimeError(e.output)
     finally:
         _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
@@ -46,8 +52,8 @@ def mkdssp_from_pdb(pdb_content):
     return output
 
 
-@celery_app.task
-def mkhssp_from_pdb(pdb_content, output_format):
+@celery_app.task(bind=True)
+def mkhssp_from_pdb(self, pdb_content, output_format):
     """
     Creates a HSSP file from the given pdb content.
 
@@ -76,6 +82,12 @@ def mkhssp_from_pdb(pdb_content, output_format):
             return output
     except subprocess.CalledProcessError as e:
         _log.error("Error: {}".format(e.output))
+        # Copy the tempfile so developers can access the pdb content to
+        # reproduce the error. The copied file is never deleted by xssp-rest.
+        error_pdb_path = os.path.join(tempfile.gettempdir(),
+                                      '{}.pdb'.format(self.request.id))
+        shutil.copyfile(tmp_file.name, error_pdb_path)
+        _log.info("Copied '{}' to '{}'".format(tmp_file.name, error_pdb_path))
         raise RuntimeError(e.output)
     finally:
         _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
