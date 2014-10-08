@@ -10,9 +10,9 @@ _log.setLevel(logging.DEBUG)
 
 import json
 import random
+import requests
 import time
 
-import requests
 from nose.tools import eq_
 
 
