@@ -19,10 +19,10 @@ def create_app(settings=None):
     else:  # pragma: no cover
         app.config.from_envvar('XSSP_REST_SETTINGS')  # pragma: no cover
 
-    # Set the maximum content length to 150MB. This is to allow large PDB files
-    # to be sent in post requests. The largest PDB file found to date is 109MB
-    # in size.
-    app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 150
+    # Set the maximum content length to 200MB. This is to allow large PDB files
+    # to be sent in post requests. The largest mmCIF file found to date is
+    # 149MB in size.
+    app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 200
 
     # Ignore Flask's built-in logging
     # app.logger is accessed here so Flask tries to create it
