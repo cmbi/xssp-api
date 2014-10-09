@@ -1,4 +1,6 @@
+import os
 import subprocess
+import tempfile
 
 from mock import ANY, call, mock_open, patch
 from nose.tools import eq_, raises
@@ -21,11 +23,14 @@ class TestTasks(object):
     @patch('subprocess.check_output')
     def test_mkdssp_from_pdb(self, mock_subprocess):
         mock_subprocess.return_value = "output"
+        tmp_file = tempfile.NamedTemporaryFile(prefix='fake', suffix='.pdb',
+                                               delete=False)
 
         from xssp_rest.tasks import mkdssp_from_pdb
-        result = mkdssp_from_pdb.delay('pdb-content')
+        result = mkdssp_from_pdb.delay(tmp_file.name)
 
         eq_(result.get(), "output")
+        eq_(os.path.isfile(tmp_file.name), False)
         mock_subprocess.assert_called_once_with(['mkdssp', '-i', ANY],
                                                 stderr=ANY)
 
@@ -34,19 +39,33 @@ class TestTasks(object):
     def test_mkdssp_from_pdb_subprocess_exception(self, mock_subprocess):
         mock_subprocess.side_effect = subprocess.CalledProcessError(
             "returncode", "cmd", "output")
+        tmp_file = tempfile.NamedTemporaryFile(prefix='fake', suffix='.pdb',
+                                               delete=False)
 
         from xssp_rest.tasks import mkdssp_from_pdb
-        result = mkdssp_from_pdb.delay('pdb-content')
-        result.get()
+        try:
+            result = mkdssp_from_pdb.delay(tmp_file.name)
+            result.get()
+        except RuntimeError:
+            head, tail = os.path.split(tmp_file.name)
+            # request id is None
+            error_pdb_path = os.path.join(head, 'None_{}'.format(tail))
+            eq_(os.path.isfile(error_pdb_path), True)
+            raise
+        finally:
+            os.remove(error_pdb_path)
 
     @patch('subprocess.check_output')
     def test_mkhssp_from_pdb(self, mock_subprocess):
         mock_subprocess.side_effect = ["output1", "output2"]
+        tmp_file = tempfile.NamedTemporaryFile(prefix='fake', suffix='.pdb',
+                                               delete=False)
 
         from xssp_rest.tasks import mkhssp_from_pdb
-        result = mkhssp_from_pdb.delay('pdb-content', 'hssp_hssp')
+        result = mkhssp_from_pdb.delay(tmp_file.name, 'hssp_hssp')
 
         eq_(result.get(), "output2")
+        eq_(os.path.isfile(tmp_file.name), False)
         mock_subprocess.assert_has_calls([
             call(['mkhssp', '-i', ANY, '-d', ANY, '-d', ANY], stderr=ANY),
             call(['hsspconv', '-i', ANY], stderr=ANY)])
@@ -56,10 +75,21 @@ class TestTasks(object):
     def test_mkhssp_from_pdb_subprocess_exception(self, mock_subprocess):
         mock_subprocess.side_effect = subprocess.CalledProcessError(
             "returncode", "cmd", "output")
+        tmp_file = tempfile.NamedTemporaryFile(prefix='fake', suffix='.pdb',
+                                               delete=False)
 
         from xssp_rest.tasks import mkhssp_from_pdb
-        result = mkhssp_from_pdb.delay('pdb-content', 'hssp_hssp')
-        result.get()
+        try:
+            result = mkhssp_from_pdb.delay(tmp_file.name, 'hssp_hssp')
+            result.get()
+        except RuntimeError:
+            head, tail = os.path.split(tmp_file.name)
+            # request id is None
+            error_pdb_path = os.path.join(head, 'None_{}'.format(tail))
+            eq_(os.path.isfile(error_pdb_path), True)
+            raise
+        finally:
+            os.remove(error_pdb_path)
 
     @patch('subprocess.check_output')
     def test_mkhssp_from_sequence(self, mock_subprocess):

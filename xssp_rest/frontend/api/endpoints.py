@@ -22,7 +22,8 @@ def create_xssp(input_type, output_type):
     from the data pass in as the form parameter 'data' in the given input_type
     format.
 
-    :param input_type: Either 'pdb_id', 'pdb_redo_id', 'pdb_file' or 'sequence'.
+    :param input_type:
+        Either 'pdb_id', 'pdb_redo_id', 'pdb_file' or 'sequence'.
     :param output_type: Either 'hssp_hssp', 'hssp_stockholm', or 'dssp'.
     :return: The id of the job.
     """
@@ -39,7 +40,8 @@ def get_xssp_status(input_type, output_type, id):
     """
     Get the status of a previous job submission.
 
-    :param input_type: Either 'pdb_id', 'pdb_redo_id', 'pdb_file' or 'sequence'.
+    :param input_type:
+        Either 'pdb_id', 'pdb_redo_id', 'pdb_file' or 'sequence'.
     :param output_type: Either 'hssp_hssp', 'hssp_stockholm', or 'dssp'.
     :param id: The id returned by a call to the create method.
     :return: Either PENDING, STARTED, SUCCESS, FAILURE, RETRY, or REVOKED.
@@ -59,7 +61,8 @@ def get_xssp_result(input_type, output_type, id):
     """
     Get the result of a previous job submission.
 
-    :param input_type: Either 'pdb_id', 'pdb_redo_id', 'pdb_file' or 'sequence'.
+    :param input_type:
+        Either 'pdb_id', 'pdb_redo_id', 'pdb_file' or 'sequence'.
     :param output_type: Either 'hssp_hssp', 'hssp_stockholm', or 'dssp'.
     :param id: The id returned by a call to the create method.
     :return: The output of the job. If the job status is not SUCCESS, this

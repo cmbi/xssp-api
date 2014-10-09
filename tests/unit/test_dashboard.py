@@ -1,4 +1,4 @@
-from StringIO import StringIO
+from tempfile import NamedTemporaryFile
 
 from mock import patch
 from nose.tools import eq_
@@ -24,14 +24,14 @@ class TestDashboard(object):
     @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
     def test_index_post_hssp_from_pdb(self, mock_call):
         mock_call.return_value = 12345
+        tmp_file = NamedTemporaryFile(prefix='fake', suffix='.pdb')
         rv = self.app.post('/', data={'input_type': 'pdb_file',
                                       'output_type': 'hssp_hssp',
-                                      'file_': (StringIO('not-real-data'),
-                                                'fake.pdb')},
+                                      'file_': (tmp_file, tmp_file.name)},
                            follow_redirects=True)
         eq_(rv.status_code, 200)
         assert "Please wait while your request is processed" in rv.data
-        mock_call.assert_called_once_with('not-real-data')
+        mock_call.assert_called_once_with()
 
     @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
     def test_index_post_hssp_from_sequence(self, mock_call):
@@ -43,7 +43,7 @@ class TestDashboard(object):
                            follow_redirects=True)
         eq_(rv.status_code, 200)
         assert "Please wait while your request is processed" in rv.data
-        mock_call.assert_called_once_with(test_sequence)
+        mock_call.assert_called_once_with()
 
     @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
     def test_index_post_hssp_from_sequence_no_input(self, mock_call):
@@ -82,14 +82,14 @@ class TestDashboard(object):
     @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
     def test_index_post_dssp_from_pdb(self, mock_call):
         mock_call.return_value = 12345
+        tmp_file = NamedTemporaryFile(prefix='fake', suffix='.pdb')
         rv = self.app.post('/', data={'input_type': 'pdb_file',
                                       'output_type': 'dssp',
-                                      'file_': (StringIO('not-real-pdb'),
-                                                'fake.pdb')},
+                                      'file_': (tmp_file, tmp_file.name)},
                            follow_redirects=True)
         eq_(rv.status_code, 200)
         assert "Please wait while your request is processed" in rv.data
-        mock_call.assert_called_once_with('not-real-pdb')
+        mock_call.assert_called_once_with()
 
     @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
     def test_index_post_dssp_from_pdb_no_input(self, mock_call):
@@ -105,10 +105,10 @@ class TestDashboard(object):
     @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
     def test_index_post_dssp_from_pdb_wrong_extension(self, mock_call):
         mock_call.return_value = 12345
+        tmp_file = NamedTemporaryFile(prefix='fake', suffix='.mol')
         rv = self.app.post('/', data={'input_type': 'pdb_file',
                                       'output_type': 'dssp',
-                                      'file_': (StringIO('not-real-pdb'),
-                                                'fake.mol')},
+                                      'file_': (tmp_file, tmp_file.name)},
                            follow_redirects=True)
         eq_(rv.status_code, 200)
         print rv.data
