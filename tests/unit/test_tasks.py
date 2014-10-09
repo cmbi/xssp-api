@@ -181,6 +181,14 @@ class TestTasks(object):
         eq_(content, 'data')
         mock_exists.assert_called_once_with('/dssp/1crn.dssp')
 
+    @patch('xssp_rest.tasks.open', mock_open(read_data='data'), create=True)
+    @patch('os.path.exists', return_value=True)
+    def test_get_dssp_upper(self, mock_exists):
+        from xssp_rest.tasks import get_dssp
+        content = get_dssp('1CRN')
+        eq_(content, 'data')
+        mock_exists.assert_called_once_with('/dssp/1crn.dssp')
+
     @patch('os.path.exists', return_value=False)
     @raises(RuntimeError)
     def test_get_dssp_redo_file_not_found(self, mock_exists):
@@ -196,6 +204,14 @@ class TestTasks(object):
         eq_(content, 'data')
         mock_exists.assert_called_once_with('/dssp_redo/1crn.dssp')
 
+    @patch('xssp_rest.tasks.open', mock_open(read_data='data'), create=True)
+    @patch('os.path.exists', return_value=True)
+    def test_get_dssp_redo_upper(self, mock_exists):
+        from xssp_rest.tasks import get_dssp_redo
+        content = get_dssp_redo('1CRN')
+        eq_(content, 'data')
+        mock_exists.assert_called_once_with('/dssp_redo/1crn.dssp')
+
     @patch('bz2.BZ2File')
     @patch('os.path.exists', return_value=True)
     def test_get_hssp_hssp(self, mock_exists, mock_bz2file):
@@ -204,6 +220,18 @@ class TestTasks(object):
 
         from xssp_rest.tasks import get_hssp
         content = get_hssp('1crn', 'hssp_hssp')
+
+        eq_(content, 'data')
+        mock_exists.assert_called_once_with('/hssp/1crn.hssp.bz2')
+
+    @patch('bz2.BZ2File')
+    @patch('os.path.exists', return_value=True)
+    def test_get_hssp_hssp_upper(self, mock_exists, mock_bz2file):
+        instance = mock_bz2file.return_value
+        instance.__enter__.return_value.read.return_value = 'data'
+
+        from xssp_rest.tasks import get_hssp
+        content = get_hssp('1CRN', 'hssp_hssp')
 
         eq_(content, 'data')
         mock_exists.assert_called_once_with('/hssp/1crn.hssp.bz2')
