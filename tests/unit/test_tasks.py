@@ -71,6 +71,22 @@ class TestTasks(object):
             call(['hsspconv', '-i', ANY], stderr=ANY)])
 
     @patch('subprocess.check_output')
+    def test_mkhssp_stockholm_from_pdb(self, mock_subprocess):
+        mock_subprocess.side_effect = ["output1", "output2"]
+        tmp_file = tempfile.NamedTemporaryFile(prefix='fake', suffix='.pdb',
+                                               delete=False)
+
+        from xssp_rest.tasks import mkhssp_from_pdb
+        result = mkhssp_from_pdb.delay(tmp_file.name, 'hssp_stockholm')
+
+        eq_(result.get(), "output1")
+        eq_(os.path.isfile(tmp_file.name), False)
+        mock_subprocess.assert_called_once_with(['mkhssp', '-i', ANY, '-d',
+                                                 ANY, '-d', ANY], stderr=ANY)
+        assert not call(['hsspconv', '-i', ANY], stderr=ANY) in \
+            mock_subprocess.call_args_list
+
+    @patch('subprocess.check_output')
     @raises(RuntimeError)
     def test_mkhssp_from_pdb_subprocess_exception(self, mock_subprocess):
         mock_subprocess.side_effect = subprocess.CalledProcessError(
