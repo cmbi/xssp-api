@@ -26,6 +26,7 @@ class FileExtension(object):
                        'supported: .{}'.format(' .'.join(allowed))
 
     def __call__(self, form, field):
+        field.errors = []
         name = field.data.filename
         if '.' not in name or \
                 name.rsplit('.', 1)[1].lower() not in self.allowed:
