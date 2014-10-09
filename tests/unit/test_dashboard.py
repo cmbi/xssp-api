@@ -12,7 +12,8 @@ class TestDashboard(object):
     def setup_class(cls):
         cls.flask_app = create_app({'TESTING': True,
                                     'SECRET_KEY': 'testing',
-                                    'WTF_CSRF_ENABLED': False})
+                                    'WTF_CSRF_ENABLED': False,
+                                    'ALLOWED_EXTENSIONS': ['pdb', 'gz']})
         cls.app = cls.flask_app.test_client()
 
     def test_index(self):
@@ -99,3 +100,16 @@ class TestDashboard(object):
         eq_(rv.status_code, 200)
         assert "This field is required if &#39;pdb_id&#39; and " + \
                "&#39;sequence&#39; have not been provided" in rv.data
+
+    @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
+    def test_index_post_dssp_from_pdb_wrong_extension(self, mock_call):
+        mock_call.return_value = 12345
+        rv = self.app.post('/', data={'input_type': 'pdb_file',
+                                      'output_type': 'dssp',
+                                      'file_': (StringIO('not-real-pdb'),
+                                                'fake.mol')},
+                           follow_redirects=True)
+        eq_(rv.status_code, 200)
+        print rv.data
+        assert "Only the following file extensions are currently " + \
+               "supported: .pdb .gz" in rv.data

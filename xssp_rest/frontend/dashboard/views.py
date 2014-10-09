@@ -1,6 +1,7 @@
 import logging
 
-from flask import Blueprint, redirect, render_template, request, url_for
+from flask import (Blueprint, current_app as app, redirect, render_template,
+                   request, url_for)
 
 from xssp_rest.frontend.dashboard.forms import XsspForm
 from xssp_rest.services.xssp import XsspStrategyFactory
@@ -12,7 +13,7 @@ bp = Blueprint('dashboard', __name__)
 
 @bp.route("/", methods=['GET', 'POST'])
 def index():
-    form = XsspForm()
+    form = XsspForm(allowed_extensions=app.config['ALLOWED_EXTENSIONS'])
     if form.validate_on_submit():
         # Determine which form field has the input data.
         if form.input_type.data == 'pdb_id' or \
