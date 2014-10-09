@@ -53,3 +53,6 @@ xssp_rest/frontend/static/libs
 
 # vagrant
 .vagrant/
+
+# xssp-rest
+uploads/

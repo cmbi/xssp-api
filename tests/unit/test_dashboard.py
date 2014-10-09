@@ -13,6 +13,7 @@ class TestDashboard(object):
         cls.flask_app = create_app({'TESTING': True,
                                     'SECRET_KEY': 'testing',
                                     'WTF_CSRF_ENABLED': False,
+                                    'UPLOAD_FOLDER': 'uploads',
                                     'ALLOWED_EXTENSIONS': ['pdb', 'gz']})
         cls.app = cls.flask_app.test_client()
 

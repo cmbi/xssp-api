@@ -1,7 +1,9 @@
 import logging
+import os
 
 from flask import (Blueprint, current_app as app, redirect, render_template,
                    request, url_for)
+from werkzeug import secure_filename
 
 from xssp_rest.frontend.dashboard.forms import XsspForm
 from xssp_rest.services.xssp import XsspStrategyFactory
@@ -20,9 +22,14 @@ def index():
            form.input_type.data == 'pdb_redo_id':
             data = form.pdb_id.data
         elif form.input_type.data == 'pdb_file':
-            _log.debug("User uploaded '{}'".format(
-                request.files['file_'].filename))
-            data = request.files['file_'].read()
+            pdb_file = request.files['file_']
+            filename = secure_filename(pdb_file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            pdb_file.save(file_path)
+            _log.debug("User uploaded '{}'. File saved to {}".format(
+                pdb_file.filename, file_path))
+            with open(file_path) as f:
+                data = f.read()
         elif form.input_type.data == 'sequence':
             data = form.sequence.data
         else:
