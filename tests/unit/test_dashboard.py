@@ -1,7 +1,7 @@
 from tempfile import NamedTemporaryFile
 
 from mock import patch
-from nose.tools import eq_
+from nose.tools import eq_, ok_
 
 from xssp_rest.factory import create_app
 
@@ -14,7 +14,9 @@ class TestDashboard(object):
                                     'SECRET_KEY': 'testing',
                                     'WTF_CSRF_ENABLED': False,
                                     'UPLOAD_FOLDER': 'uploads',
-                                    'ALLOWED_EXTENSIONS': ['pdb', 'gz']})
+                                    'ALLOWED_EXTENSIONS': ['bdb', 'bz2', 'cif',
+                                                           'ent', 'gz', 'mcif',
+                                                           'pdb']})
         cls.app = cls.flask_app.test_client()
 
     def test_index(self):
@@ -111,6 +113,5 @@ class TestDashboard(object):
                                       'file_': (tmp_file, tmp_file.name)},
                            follow_redirects=True)
         eq_(rv.status_code, 200)
-        print rv.data
-        assert "Only the following file extensions are currently " + \
-               "supported: .pdb .gz" in rv.data
+        ok_("Only the following file extensions are supported: .{}".format(
+            ' .'.join(self.flask_app.config['ALLOWED_EXTENSIONS'])) in rv.data)

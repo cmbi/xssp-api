@@ -2,10 +2,11 @@ import inspect
 import logging
 import re
 
-from flask import Blueprint, render_template, request
+from flask import Blueprint, current_app as app, render_template, request
 from flask.json import jsonify
 
-from xssp_rest.services.xssp import XsspStrategyFactory
+from xssp_rest.frontend.dashboard.forms import XsspForm
+from xssp_rest.services.xssp import process_request
 
 
 _log = logging.getLogger(__name__)
@@ -22,17 +23,23 @@ def create_xssp(input_type, output_type):
     from the data pass in as the form parameter 'data' in the given input_type
     format.
 
-    :param input_type:
-        Either 'pdb_id', 'pdb_redo_id', 'pdb_file' or 'sequence'.
+    :param input_type: Either 'pdb_id', 'pdb_redo_id', 'pdb_file' or 'sequence'.
     :param output_type: Either 'hssp_hssp', 'hssp_stockholm', or 'dssp'.
     :return: The id of the job.
     """
-    strategy = XsspStrategyFactory.create(input_type, output_type)
-    _log.debug("Using '{}'".format(strategy.__class__.__name__))
-    celery_id = strategy(request.form['data'])
+    form = XsspForm(allowed_extensions=app.config['ALLOWED_EXTENSIONS'])
+    form.input_type.data = input_type
+    form.output_type.data = output_type
+    form.sequence.data = request.form.get('data', None)
+    form.pdb_id.data = request.form.get('data', None)
+    form.file_.data = request.files.get('file_', None)
+    if form.validate_on_submit():
+        celery_id = process_request(form.input_type.data, form.output_type.data,
+                                    form.pdb_id.data, request.files,
+                                    form.sequence.data)
 
-    _log.info("Task created with id '{}'".format(celery_id))
-    return jsonify({'id': celery_id}), 202
+        return jsonify({'id': celery_id}), 202
+    return jsonify(form.errors), 400
 
 
 @bp.route('/status/<input_type>/<output_type>/<id>/', methods=['GET'])
@@ -100,4 +107,4 @@ def api_doc():
 
 @bp.route('/example', methods=['GET'])
 def api_example():
-    return render_template('api/example.html')
+    return render_template('api/example.html')  # pragma: no cover

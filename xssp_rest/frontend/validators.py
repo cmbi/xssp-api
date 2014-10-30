@@ -22,8 +22,8 @@ class FileExtension(object):
     """
     def __init__(self, allowed):
         self.allowed = {e.lower() for e in allowed}
-        self.message = 'Only the following file extensions are currently ' + \
-                       'supported: .{}'.format(' .'.join(allowed))
+        self.message = ('Only the following file extensions are ' +
+                        'supported: .{}').format(' .'.join(allowed))
 
     def __call__(self, form, field):
         field.errors = []

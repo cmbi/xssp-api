@@ -1,7 +1,39 @@
 import logging
+import os
 
+from flask import current_app as app
+from werkzeug import secure_filename
 
 _log = logging.getLogger(__name__)
+
+
+def process_request(input_type, output_type, pdb_id=None, uploaded_files=None,
+                    sequence=None):
+    # Save the PDB file if necessary
+    file_path = None
+    if input_type == 'pdb_file':
+        assert 'file_' in uploaded_files
+        pdb_file = uploaded_files['file_']
+        assert hasattr(pdb_file, 'filename')
+
+        filename = secure_filename(pdb_file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        pdb_file.save(file_path)
+        _log.debug("User uploaded '{}'. File saved to {}".format(
+            pdb_file.filename, file_path))
+
+    # Create and run the job via the strategy for the given input and
+    # output types.
+    _log.debug("Input type '{}' and output type '{}'".format(
+        input_type, output_type))
+
+    strategy = XsspStrategyFactory.create(input_type, output_type, pdb_id,
+                                          file_path, sequence)
+    _log.debug("Using '{}'".format(strategy.__class__.__name__))
+    celery_id = strategy()
+    _log.info("Job has id '{}'".format(celery_id))
+
+    return celery_id
 
 
 class XsspStrategyFactory(object):
@@ -77,9 +109,7 @@ class PdbContentStrategy(object):
         _log.debug("Calling task '{}'".format(task.__name__))
 
         if 'hssp' in self.output_format:
-            print 'HSSP HERE'
             result = task.delay(self.pdb_file_path, self.output_format)
         else:
-            print 'DSSP HERE'
             result = task.delay(self.pdb_file_path)
         return result.id

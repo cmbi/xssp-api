@@ -58,7 +58,7 @@ def create_app(settings=None):
 
     # Only log to the console during development and production, but not
     # during testing.
-    if not app.testing:
+    if not app.testing:  # pragma: no cover
         ch = logging.StreamHandler()
         formatter = logging.Formatter(
             '%(asctime)s - %(levelname)s - %(message)s')
@@ -66,13 +66,13 @@ def create_app(settings=None):
         root_logger.addHandler(ch)
 
     # Only log debug messages during development
-    if app.debug:
+    if app.debug:  # pragma: no cover
         root_logger.setLevel(logging.DEBUG)
     else:
         root_logger.setLevel(logging.INFO)
 
     # Check if the upload folder exists and create it if it doesn't
-    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):  # pragma: no cover
         try:
             os.makedirs(app.config['UPLOAD_FOLDER'])
         except OSError as ex:
@@ -84,7 +84,7 @@ def create_app(settings=None):
         test_filename = os.path.join(app.config['UPLOAD_FOLDER'], 'test_file')
         with open(test_filename, 'w') as f:
             f.write('test')
-    except OSError as ex:
+    except OSError as ex:  # pragma: no cover
         _log.error("Unable to write to the upload folder '{}': {}".format(
             app.config['UPLOAD_FOLDER'], ex))
         sys.exit(1)
