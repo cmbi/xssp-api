@@ -1,8 +1,9 @@
 import logging
 
-from flask import (Blueprint, current_app as app, redirect, render_template,
+from flask import (Blueprint, current_app as app, g, redirect, render_template,
                    request, url_for)
 
+from xssp_rest import get_version
 from xssp_rest.frontend.dashboard.forms import XsspForm
 from xssp_rest.services.xssp import process_request
 
@@ -40,3 +41,8 @@ def output(input_type, output_type, celery_id):
 def exception_error_handler(error):  # pragma: no cover
     _log.error("Unhandled exception: {}".format(error))
     return render_template('dashboard/error.html', msg=error), 500
+
+
+@bp.before_request
+def before_request():
+    g.xssp_version = get_version()
