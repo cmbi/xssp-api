@@ -1,6 +1,7 @@
 import inspect
 import json
 import re
+from StringIO import StringIO
 
 from mock import patch
 from nose.tools import eq_, ok_, raises
@@ -21,13 +22,13 @@ class TestEndpoints(object):
     def test_create_xssp_pdb_file_dssp(self, mock_call):
         mock_call.return_value = 12345
         rv = self.app.post('/api/create/pdb_file/dssp/',
-                           data={'data': 'not-real-data'})
-        print rv.data
+                           data={'file_': (StringIO('not-real-data'),
+                                           'fake.pdb')})
         eq_(rv.status_code, 202)
         response = json.loads(rv.data)
         ok_('id' in response)
         eq_(response['id'], 12345)
-        mock_call.assert_called_once_with('not-real-data')
+        mock_call.assert_called_once_with()
 
     def test_create_xssp_pdb_file_dssp_no_data(self):
         rv = self.app.post('/api/create/pdb_file/dssp/')
@@ -37,12 +38,13 @@ class TestEndpoints(object):
     def test_create_xssp_pdb_file_hssp(self, mock_call):
         mock_call.return_value = 12345
         rv = self.app.post('/api/create/pdb_file/hssp_hssp/',
-                           data={'data': 'not-real-data'})
+                           data={'file_': (StringIO('not-real-data'),
+                                           'fake.pdb')})
         eq_(rv.status_code, 202)
         response = json.loads(rv.data)
         ok_('id' in response)
         eq_(response['id'], 12345)
-        mock_call.assert_called_once_with('not-real-data')
+        mock_call.assert_called_once_with()
 
     def test_create_xssp_pdb_file_hssp_no_data(self):
         rv = self.app.post('/api/create/pdb_file/hssp/')
@@ -57,7 +59,7 @@ class TestEndpoints(object):
         response = json.loads(rv.data)
         ok_('id' in response)
         eq_(response['id'], 12345)
-        mock_call.assert_called_once_with('not-a-real-sequence')
+        mock_call.assert_called_once_with()
 
     def test_create_xssp_sequence_hssp_no_data(self):
         rv = self.app.post('/api/create/sequence/hssp_hssp/')

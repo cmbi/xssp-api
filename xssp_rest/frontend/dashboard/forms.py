@@ -4,7 +4,8 @@ from flask_wtf import Form
 from wtforms.fields import FileField, SelectField, TextAreaField, TextField
 from wtforms.validators import Regexp
 
-from xssp_rest.frontend.validators import NAminoAcids, NotRequiredIfOneOf
+from xssp_rest.frontend.validators import (FileExtension, NAminoAcids,
+                                           NotRequiredIfOneOf)
 
 
 RE_PDB_ID = re.compile(r"^[0-9a-zA-Z]{4}$")
@@ -27,3 +28,9 @@ class XsspForm(Form):
         NAminoAcids(min=25)
     ])
     file_ = FileField(u'File', [NotRequiredIfOneOf(['pdb_id', 'sequence'])])
+
+    def __init__(self, allowed_extensions=None, **kwargs):
+        super(XsspForm, self).__init__(**kwargs)
+        if allowed_extensions:
+            file_field = self._fields.get('file_')
+            file_field.validators.append(FileExtension(allowed_extensions))

@@ -1,4 +1,6 @@
 import logging
+import os
+import sys
 from logging.handlers import SMTPHandler
 
 from celery import Celery
@@ -19,10 +21,10 @@ def create_app(settings=None):
     else:  # pragma: no cover
         app.config.from_envvar('XSSP_REST_SETTINGS')  # pragma: no cover
 
-    # Set the maximum content length to 150MB. This is to allow large PDB files
-    # to be sent in post requests. The largest PDB file found to date is 109MB
-    # in size.
-    app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 150
+    # Set the maximum content length to 200MB. This is to allow large PDB files
+    # to be sent in post requests. The largest mmCIF file found to date is
+    # 149MB in size.
+    app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 200
 
     # Ignore Flask's built-in logging
     # app.logger is accessed here so Flask tries to create it
@@ -56,7 +58,7 @@ def create_app(settings=None):
 
     # Only log to the console during development and production, but not
     # during testing.
-    if not app.testing:
+    if not app.testing:  # pragma: no cover
         ch = logging.StreamHandler()
         formatter = logging.Formatter(
             '%(asctime)s - %(levelname)s - %(message)s')
@@ -64,10 +66,31 @@ def create_app(settings=None):
         root_logger.addHandler(ch)
 
     # Only log debug messages during development
-    if app.debug:
+    if app.debug:  # pragma: no cover
         root_logger.setLevel(logging.DEBUG)
     else:
         root_logger.setLevel(logging.INFO)
+
+    # Check if the upload folder exists and create it if it doesn't
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):  # pragma: no cover
+        try:
+            os.makedirs(app.config['UPLOAD_FOLDER'])
+        except OSError as ex:
+            _log.error("Error creating upload folder: {}".format(ex))
+            sys.exit(1)
+
+    # Check that the process has permission to write in the upload folder
+    try:
+        test_filename = os.path.join(app.config['UPLOAD_FOLDER'], 'test_file')
+        with open(test_filename, 'w') as f:
+            f.write('test')
+    except OSError as ex:  # pragma: no cover
+        _log.error("Unable to write to the upload folder '{}': {}".format(
+            app.config['UPLOAD_FOLDER'], ex))
+        sys.exit(1)
+    finally:
+        if os.path.exists(test_filename):
+            os.remove(test_filename)
 
     # Use ProxyFix to correct URL's when redirecting.
     from xssp_rest.middleware import ReverseProxied

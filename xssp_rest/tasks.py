@@ -17,59 +17,34 @@ _log = logging.getLogger(__name__)
 
 
 @celery_app.task(bind=True)
-def mkdssp_from_pdb(self, pdb_content):
-    """
-    Creates a DSSP file from the given pdb content.
-
-    A temporary file is created to store the pdb_content because mkdssp doesn't
-    accept input from stdin.
-    """
-    tmp_file = tempfile.NamedTemporaryFile(prefix='dssp_rest_tmp',
-                                           delete=False)
-    _log.debug("Created tmp file '{}'".format(tmp_file.name))
-
+def mkdssp_from_pdb(self, pdb_file_path):
+    """Creates a DSSP file from the given pdb file path."""
     try:
-        with tmp_file as f:
-            _log.debug("Writing data to '{}'".format(tmp_file.name))
-            f.write(pdb_content)
-
-        args = ['mkdssp', '-i', tmp_file.name]
+        args = ['mkdssp', '-i', pdb_file_path]
         _log.info("Running command '{}'".format(args))
         output = subprocess.check_output(args, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         _log.error("Error: {}".format(e.output))
-        # Copy the tempfile so developers can access the pdb content to
-        # reproduce the error. The copied file is never deleted by xssp-rest.
-        error_pdb_path = os.path.join(tempfile.gettempdir(),
-                                      '{}.pdb'.format(self.request.id))
-        shutil.copyfile(tmp_file.name, error_pdb_path)
-        _log.info("Copied '{}' to '{}'".format(tmp_file.name, error_pdb_path))
+        # Copy the file so developers can access the pdb content to
+        # reproduce the error. The renamed file is never deleted by xssp-rest.
+        head, tail = os.path.split(pdb_file_path)
+        error_pdb_path = os.path.join(head,
+                                      '{}_{}'.format(self.request.id, tail))
+        shutil.copyfile(pdb_file_path, error_pdb_path)
+        _log.info("Copied '{}' to '{}'".format(pdb_file_path, error_pdb_path))
         raise RuntimeError(e.output)
     finally:
-        _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
-        os.remove(tmp_file.name)
+        _log.debug("Deleting PDB file '{}'".format(pdb_file_path))
+        os.remove(pdb_file_path)
 
     return output
 
 
 @celery_app.task(bind=True)
-def mkhssp_from_pdb(self, pdb_content, output_format):
-    """
-    Creates a HSSP file from the given pdb content.
-
-    A temporary file is created to store the pdb_content because mkhssp doesn't
-    accept input from stdin.
-    """
-    tmp_file = tempfile.NamedTemporaryFile(prefix='hssp_rest_tmp',
-                                           delete=False)
-    _log.debug("Created tmp file '{}'".format(tmp_file.name))
-
+def mkhssp_from_pdb(self, pdb_file_path, output_format):
+    """Creates a HSSP file from the given pdb file path."""
     try:
-        with tmp_file as f:
-            _log.debug("Writing data to '{}'".format(tmp_file.name))
-            f.write(pdb_content)
-
-        args = ['mkhssp', '-i', tmp_file.name]
+        args = ['mkhssp', '-i', pdb_file_path]
         args.extend(reduce(lambda l, a: l + ['-d', a],
                            flask_app.config['XSSP_DATABANKS'],
                            []))
@@ -82,16 +57,17 @@ def mkhssp_from_pdb(self, pdb_content, output_format):
             return output
     except subprocess.CalledProcessError as e:
         _log.error("Error: {}".format(e.output))
-        # Copy the tempfile so developers can access the pdb content to
-        # reproduce the error. The copied file is never deleted by xssp-rest.
-        error_pdb_path = os.path.join(tempfile.gettempdir(),
-                                      '{}.pdb'.format(self.request.id))
-        shutil.copyfile(tmp_file.name, error_pdb_path)
-        _log.info("Copied '{}' to '{}'".format(tmp_file.name, error_pdb_path))
+        # Copy the file so developers can access the pdb content to
+        # reproduce the error. The renamed file is never deleted by xssp-rest.
+        head, tail = os.path.split(pdb_file_path)
+        error_pdb_path = os.path.join(head,
+                                      '{}_{}'.format(self.request.id, tail))
+        shutil.copyfile(pdb_file_path, error_pdb_path)
+        _log.info("Copied '{}' to '{}'".format(pdb_file_path, error_pdb_path))
         raise RuntimeError(e.output)
     finally:
-        _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
-        os.remove(tmp_file.name)
+        _log.debug("Deleting PDB file '{}'".format(pdb_file_path))
+        os.remove(pdb_file_path)
 
 
 @celery_app.task

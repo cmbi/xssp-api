@@ -11,6 +11,28 @@ RE_SEQ = re.compile(r"^[XARNDCEQGHILKMFPSTWYVxarndceqghilkmfpstwyv]+$")
 _log = logging.getLogger(__name__)
 
 
+class FileExtension(object):
+    """
+    Validate the PDB or mmCIF file extension.
+
+    raise ValidationError if the extension of the given filename is not
+        supported.
+
+    The extension check is case insensitive.
+    """
+    def __init__(self, allowed):
+        self.allowed = {e.lower() for e in allowed}
+        self.message = ('Only the following file extensions are ' +
+                        'supported: .{}').format(' .'.join(allowed))
+
+    def __call__(self, form, field):
+        field.errors = []
+        name = field.data.filename
+        if '.' not in name or \
+                name.rsplit('.', 1)[1].lower() not in self.allowed:
+            raise ValidationError(self.message)
+
+
 class NotRequiredIfOneOf(Required):
     """
     Validate a field if and only if all other fields have not been given.
@@ -48,7 +70,7 @@ class NAminoAcids(object):
     """
     Validate a protein sequence field.
 
-    raise a ValidationError if less than min amino acids have been given.
+    raise ValidationError if less than min amino acids have been given.
 
     Amino Acids can be from the set ACDEFGHIKLMNPQRSTVWXY.
     Single sequence FASTA and lowercase 1-letter codes are also accepted.
