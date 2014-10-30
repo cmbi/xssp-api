@@ -10,3 +10,7 @@ CELERY_RESULT_BACKEND = 'redis://localhost/0'
 
 # xssp
 XSSP_DATABANKS = ['/data/fasta/sprot.fasta', '/data/fasta/trembl.fasta']
+
+# uploads
+UPLOAD_FOLDER = '/tmp/xssp-rest/uploads'
+ALLOWED_EXTENSIONS = ['bdb', 'bz2', 'cif', 'ent', 'gz', 'mcif', 'pdb']

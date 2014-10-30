@@ -2,8 +2,45 @@ from mock import Mock
 from nose.tools import eq_, raises
 from wtforms.validators import StopValidation
 
-from xssp_rest.frontend.validators import (NAminoAcids, NotRequiredIfOneOf,
-                                           ValidationError)
+from xssp_rest.frontend.validators import (FileExtension, NAminoAcids,
+                                           NotRequiredIfOneOf, ValidationError)
+
+
+def test_file_extension():
+    mock_field = Mock()
+    mock_field.data.filename = 'test.pdb'
+    mock_field.errors = []
+
+    mock_form = Mock()
+    mock_form._fields = {'file_field': mock_field}
+
+    eq_(FileExtension(['pdb'])(mock_form, mock_field), None)
+
+
+def test_file_extension_case_insensitive():
+    mock_field = Mock()
+    mock_field.data.filename = 'test.PDB'
+    mock_field.errors = []
+
+    mock_form = Mock()
+    mock_form._fields = {'file_field': mock_field}
+
+    eq_(FileExtension(['pdb'])(mock_form, mock_field), None)
+
+    mock_field.data.filename = 'test.pdb'
+    eq_(FileExtension(['PDB'])(mock_form, mock_field), None)
+
+
+@raises(ValidationError)
+def test_file_extension_not_allowed():
+    mock_field = Mock()
+    mock_field.data.filename = 'test.notallowed'
+    mock_field.errors = []
+
+    mock_form = Mock()
+    mock_form._fields = {'file_field': mock_field}
+
+    eq_(FileExtension(['pdb'])(mock_form, mock_field), None)
 
 
 def test_not_required_if_one_of():

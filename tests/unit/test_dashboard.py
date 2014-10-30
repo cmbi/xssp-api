@@ -1,7 +1,7 @@
-from StringIO import StringIO
+from tempfile import NamedTemporaryFile
 
 from mock import patch
-from nose.tools import eq_
+from nose.tools import eq_, ok_
 
 from xssp_rest.factory import create_app
 
@@ -12,7 +12,11 @@ class TestDashboard(object):
     def setup_class(cls):
         cls.flask_app = create_app({'TESTING': True,
                                     'SECRET_KEY': 'testing',
-                                    'WTF_CSRF_ENABLED': False})
+                                    'WTF_CSRF_ENABLED': False,
+                                    'UPLOAD_FOLDER': 'uploads',
+                                    'ALLOWED_EXTENSIONS': ['bdb', 'bz2', 'cif',
+                                                           'ent', 'gz', 'mcif',
+                                                           'pdb']})
         cls.app = cls.flask_app.test_client()
 
     def test_index(self):
@@ -22,14 +26,14 @@ class TestDashboard(object):
     @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
     def test_index_post_hssp_from_pdb(self, mock_call):
         mock_call.return_value = 12345
+        tmp_file = NamedTemporaryFile(prefix='fake', suffix='.pdb')
         rv = self.app.post('/', data={'input_type': 'pdb_file',
                                       'output_type': 'hssp_hssp',
-                                      'file_': (StringIO('not-real-data'),
-                                                'fake.pdb')},
+                                      'file_': (tmp_file, tmp_file.name)},
                            follow_redirects=True)
         eq_(rv.status_code, 200)
         assert "Please wait while your request is processed" in rv.data
-        mock_call.assert_called_once_with('not-real-data')
+        mock_call.assert_called_once_with()
 
     @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
     def test_index_post_hssp_from_sequence(self, mock_call):
@@ -41,7 +45,7 @@ class TestDashboard(object):
                            follow_redirects=True)
         eq_(rv.status_code, 200)
         assert "Please wait while your request is processed" in rv.data
-        mock_call.assert_called_once_with(test_sequence)
+        mock_call.assert_called_once_with()
 
     @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
     def test_index_post_hssp_from_sequence_no_input(self, mock_call):
@@ -80,14 +84,14 @@ class TestDashboard(object):
     @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
     def test_index_post_dssp_from_pdb(self, mock_call):
         mock_call.return_value = 12345
+        tmp_file = NamedTemporaryFile(prefix='fake', suffix='.pdb')
         rv = self.app.post('/', data={'input_type': 'pdb_file',
                                       'output_type': 'dssp',
-                                      'file_': (StringIO('not-real-pdb'),
-                                                'fake.pdb')},
+                                      'file_': (tmp_file, tmp_file.name)},
                            follow_redirects=True)
         eq_(rv.status_code, 200)
         assert "Please wait while your request is processed" in rv.data
-        mock_call.assert_called_once_with('not-real-pdb')
+        mock_call.assert_called_once_with()
 
     @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
     def test_index_post_dssp_from_pdb_no_input(self, mock_call):
@@ -99,3 +103,15 @@ class TestDashboard(object):
         eq_(rv.status_code, 200)
         assert "This field is required if &#39;pdb_id&#39; and " + \
                "&#39;sequence&#39; have not been provided" in rv.data
+
+    @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
+    def test_index_post_dssp_from_pdb_wrong_extension(self, mock_call):
+        mock_call.return_value = 12345
+        tmp_file = NamedTemporaryFile(prefix='fake', suffix='.mol')
+        rv = self.app.post('/', data={'input_type': 'pdb_file',
+                                      'output_type': 'dssp',
+                                      'file_': (tmp_file, tmp_file.name)},
+                           follow_redirects=True)
+        eq_(rv.status_code, 200)
+        ok_("Only the following file extensions are supported: .{}".format(
+            ' .'.join(self.flask_app.config['ALLOWED_EXTENSIONS'])) in rv.data)
