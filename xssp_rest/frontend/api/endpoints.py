@@ -20,8 +20,9 @@ def create_xssp(input_type, output_type):
     Create HSSP or DSSP data.
 
     Adds a job to a queue to produce the data in the given output_type format
-    from the data pass in as the form parameter 'data' in the given input_type
-    format.
+    from the data passed. The pdb_id and sequence must be set in a form
+    parameter called 'data', and the pdb_file content in a parameter called
+    'file_' format.
 
     :param input_type: Either 'pdb_id', 'pdb_redo_id', 'pdb_file' or 'sequence'.
     :param output_type: Either 'hssp_hssp', 'hssp_stockholm', or 'dssp'.
