@@ -1,3 +1,10 @@
+# 4.0.0 (30-10-2014)
+
+	* Allow mmCIF input (#36)
+	* Support compressed files (#57)
+	* Clear button does not change input field (#60)
+	* Show xssp version (#56)
+
 # 3.0.5 (30-09-2014)
 
 	* Store pdb content when xssp fails (#55)
