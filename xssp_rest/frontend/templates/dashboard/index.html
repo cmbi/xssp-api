@@ -6,8 +6,8 @@
 
 {{ render_form_errors(form) }}
 
-<form method="post" action="{{ url_for('dashboard.index') }}" role="form"
-      enctype="multipart/form-data">
+<form id="xssp_form" method="post" action="{{ url_for('dashboard.index') }}"
+      role="form" enctype="multipart/form-data">
   {{ form.hidden_tag() }}
 
   <div class="row">
@@ -54,7 +54,7 @@
   </div>
   <hr/>
   <div id="form_submit_div" class="form-group pull-right">
-    <button type="reset" class="btn btn-default">Clear</button>
+    <button id="btn_clear" type="reset" class="btn btn-default">Clear</button>
     <button type="submit" class="btn btn-success">Submit</button>
   </div>
 </form>
@@ -237,6 +237,11 @@
     // Ensure that the correct input field is displayed when the form reloads
     // due to form errors, page refreshing, or the back button.
     $('#input_type').trigger('change');
+
+    // Ensure the correct input field is displayed when the form is cleared.
+    $('#btn_clear').click(function() { $('#xssp_form')[0].reset();
+      show_data_input();
+    });
 
     // Ensure that the input types listed are correct for the selected output
     // type.
