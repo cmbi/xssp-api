@@ -1,4 +1,6 @@
 import logging
+import os
+import sys
 from logging.handlers import SMTPHandler
 
 from celery import Celery
@@ -68,6 +70,27 @@ def create_app(settings=None):
         root_logger.setLevel(logging.DEBUG)
     else:
         root_logger.setLevel(logging.INFO)
+
+    # Check if the upload folder exists and create it if it doesn't
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        try:
+            os.makedirs(app.config['UPLOAD_FOLDER'])
+        except OSError as ex:
+            _log.error("Error creating upload folder: {}".format(ex))
+            sys.exit(1)
+
+    # Check that the process has permission to write in the upload folder
+    try:
+        test_filename = os.path.join(app.config['UPLOAD_FOLDER'], 'test_file')
+        with open(test_filename, 'w') as f:
+            f.write('test')
+    except OSError as ex:
+        _log.error("Unable to write to the upload folder '{}': {}".format(
+            app.config['UPLOAD_FOLDER'], ex))
+        sys.exit(1)
+    finally:
+        if os.path.exists(test_filename):
+            os.remove(test_filename)
 
     # Use ProxyFix to correct URL's when redirecting.
     from xssp_rest.middleware import ReverseProxied
