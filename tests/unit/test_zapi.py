@@ -13,9 +13,11 @@ class TestEndpoints(object):
 
     @classmethod
     def setup_class(cls):
+        # The API doesn't need a CSRF token, so enable CSRF so that tests will
+        # fail if the API is incorrectly configured.
         cls.flask_app = create_app({'TESTING': True,
                                     'SECRET_KEY': 'testing',
-                                    'WTF_CSRF_ENABLED': False})
+                                    'WTF_CSRF_ENABLED': True})
         cls.app = cls.flask_app.test_client()
 
     @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
@@ -40,6 +42,7 @@ class TestEndpoints(object):
         rv = self.app.post('/api/create/pdb_file/hssp_hssp/',
                            data={'file_': (StringIO('not-real-data'),
                                            'fake.pdb')})
+        print rv.data
         eq_(rv.status_code, 202)
         response = json.loads(rv.data)
         ok_('id' in response)
