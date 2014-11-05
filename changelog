@@ -1,3 +1,7 @@
+# 4.0.1 (05-11-2014)
+
+	* REST calls require CSRF token (#65)
+
 # 4.0.0 (30-10-2014)
 
 	* Allow mmCIF input (#36)
