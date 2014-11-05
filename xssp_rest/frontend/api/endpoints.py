@@ -28,7 +28,8 @@ def create_xssp(input_type, output_type):
     :param output_type: Either 'hssp_hssp', 'hssp_stockholm', or 'dssp'.
     :return: The id of the job.
     """
-    form = XsspForm(allowed_extensions=app.config['ALLOWED_EXTENSIONS'])
+    form = XsspForm(allowed_extensions=app.config['ALLOWED_EXTENSIONS'],
+                    csrf_enabled=False)
     form.input_type.data = input_type
     form.output_type.data = output_type
     form.sequence.data = request.form.get('data', None)
