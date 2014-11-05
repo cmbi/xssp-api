@@ -3,7 +3,7 @@ import logging
 from flask_debugtoolbar import DebugToolbarExtension
 
 
-_VERSION = '4.0.0'
+_VERSION = '4.0.1'
 
 
 # Create the top-level logger. This is required because Flask's built-in method
