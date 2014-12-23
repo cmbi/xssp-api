@@ -1,5 +1,5 @@
 textarea {
-  resize: none;
+  resize: vertical;
 }
 
 .btn-file {
