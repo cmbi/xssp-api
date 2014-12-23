@@ -85,7 +85,18 @@
     </div>
     <div class="container navbar navbar-fixed-bottom">
       <hr style='padding: 5px; margin: 0;'>
-      <p style='color: lightgray;'>Version: {{ g.xssp_version }}</p>
+      <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <p style='color: lightgray;'>Version: {{ g.xssp_version }}</p>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+          <p class="pull-right">
+            <a style='color: lightgray;' href="http://www2.cmbi.ru.nl/">
+              CMBI
+            </a>
+          </p>
+        </div>
+      </div>
     </div>
 
     {% block js %}
