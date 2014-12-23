@@ -35,36 +35,50 @@
 {% block js %}
 <script type="text/javascript">
   $(document).ready(function() {
-      var intervalId = setInterval(function(){
+      function _get_status_class(status) {
+        if (status == 'PENDING') {
+          return 'label-default';
+        } else if (status == 'STARTED') {
+          return 'label-primary';
+        } else if (status == 'FAILURE') {
+          return 'label-danger';
+        } else if (status == 'SUCCESS') {
+          return 'label-success';
+        }
+      }
+
+      var intervalId = setInterval(update_status, 10000);
+
+      update_status();
+
+      function update_status() {
         $.getJSON(
           "{{ url_for('xssp.get_xssp_status', input_type=input_type, output_type=output_type, id=celery_id) }}",
           function(data) {
-            $('#status').text(data['status']);
+            // Remove all classes from the status message
+            $('#status').removeClass();
 
-            if (data['status'] == 'PENDING') {
-              $('#status').removeClass("label-default")
-                          .addClass("label-info");
-            }
+            // Set the status text and classes
+            $('#status').text(data['status']);
+            var status_class = _get_status_class(data['status']);
+            $('#status').addClass("label " + status_class);
 
             if (data['status'] == 'FAILURE') {
               clearInterval(intervalId);
-              $('#status').removeClass("label-default label-info")
-                          .addClass("label-danger");
               $('#output').text(data['message']);
             }
 
             if (data['status'] == 'SUCCESS') {
               clearInterval(intervalId);
-              $('#status').removeClass("label-default label-info")
-                          .addClass("label-success");
               $.getJSON(
                   "{{ url_for('xssp.get_xssp_result', input_type=input_type, output_type=output_type, id=celery_id) }}",
                 function(data) {
                   $('#output').text(data['result']);
-                });
+              });
             }
           }
-        )}, 10000);
+        )
+      }
   });
 </script>
 {% endblock %}
