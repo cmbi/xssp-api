@@ -99,6 +99,17 @@
       </div>
     </div>
 
+    <script>
+    $(document).ready(function() {
+      $("#start_tour").click(function() {
+        if (window.location.pathname != '/') {
+          window.location.replace("{{ url_for('dashboard.index') }}" +
+                                  "?tour=true");
+        }
+      });
+    });
+    </script>
+
     {% block js %}
     {% endblock %}
   </body>

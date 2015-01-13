@@ -138,6 +138,12 @@
       }
   }
 
+  function get_query_param(param) {
+    var result =  window.location.search.match(
+        new RegExp("(\\?|&)" + param + "(\\[\\])?=([^&]*)"));
+    return result ? result[3] : false;
+  }
+
   $(document).on('change', '.btn-file :file', function() {
     var input = $(this),
         numFiles = input.get(0).files ? input.get(0).files.length : 1,
@@ -225,6 +231,12 @@
       }
     ]});
     tour.init();
+
+    // Start the tour automatically if redirected to the index page via the
+    // help button.
+    if (get_query_param('tour')) {
+      tour.restart();
+    }
 
     $('#start_tour').click(function() { tour.restart(); });
 
