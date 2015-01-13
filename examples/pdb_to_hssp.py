@@ -15,15 +15,14 @@ import time
 
 def pdb_to_hssp(pdb_file_path, rest_url):
     # Read the pdb file data into a variable
-    with open(pdb_file_path) as pdb_file:
-        pdb_content = pdb_file.read()
+    files = {'file_': open(pdb_file_path, 'rb')}
 
     # Send a request to the server to create hssp data from the pdb file data.
     # If an error occurs, an exception is raised and the program exits. If the
     # request is successful, the id of the job running on the server is
     # returned.
     url_create = '{}api/create/pdb_file/hssp_hssp/'.format(rest_url)
-    r = requests.post(url_create, data={'data': pdb_content})
+    r = requests.post(url_create, files=files)
     r.raise_for_status()
 
     job_id = json.loads(r.text)['id']
