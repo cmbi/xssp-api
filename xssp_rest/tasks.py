@@ -114,6 +114,9 @@ def mkhssp_from_sequence(sequence, output_format):
             return _stockholm_to_hssp(output)
         else:
             return output
+    except subprocess.CalledProcessError as e:
+        # Celery cannot pickle a CalledProcessError. Convert to RuntimeError.
+        raise RuntimeError(e.output)
     finally:
         _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
         os.remove(tmp_file.name)
@@ -237,7 +240,7 @@ def _stockholm_to_hssp(stockholm_data):
         return output
     except subprocess.CalledProcessError as e:
         _log.error("Error: {}".format(e.output))
-        raise RuntimeError(e.output)
+        raise
     finally:
         _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
         os.remove(tmp_file.name)

@@ -108,6 +108,33 @@ class TestTasks(object):
             os.remove(error_pdb_path)
 
     @patch('subprocess.check_output')
+    def test_copy_input_when_stockholm_error(self, mock_subprocess):
+        """
+        Tests that when a stockholm file is produced but an error occurs, that
+        the input file is copied for debugging.
+
+        See https://github.com/cmbi/xssp-rest/issues/69.
+        """
+        mock_subprocess.side_effect = [
+            "output1",
+            subprocess.CalledProcessError("returncode", "cmd", "output")]
+
+        tmp_file = tempfile.NamedTemporaryFile(prefix='fake', suffix='.pdb',
+                                               delete=False)
+
+        from xssp_rest.tasks import mkhssp_from_pdb
+        try:
+            result = mkhssp_from_pdb.delay(tmp_file.name, 'hssp_hssp')
+            result.get()
+        except RuntimeError:
+            head, tail = os.path.split(tmp_file.name)
+            # request id is None
+            error_pdb_path = os.path.join(head, 'None_{}'.format(tail))
+            eq_(os.path.isfile(error_pdb_path), True)
+        finally:
+            os.remove(error_pdb_path)
+
+    @patch('subprocess.check_output')
     def test_mkhssp_from_sequence(self, mock_subprocess):
         mock_subprocess.return_value = "output"
 
