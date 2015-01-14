@@ -93,7 +93,9 @@ class SequenceStrategy(object):
         task = get_task('sequence', self.output_format)
         _log.debug("Calling task '{}'".format(task.__name__))
 
-        if 'hssp' in self.output_format:
+        if 'hg_hssp' in self.output_format:
+            result = task.delay(self.sequence)
+        elif 'hssp' in self.output_format:
             result = task.delay(self.sequence, self.output_format)
         return result.id
 

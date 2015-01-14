@@ -103,7 +103,12 @@
         $('#input_type').append('<option value="pdb_file">PDB File</option>');
         $('#input_type').append('<option value="sequence">Sequence</option>');
         break;
+      case 'hg_hssp':
+        $('#input_type').empty();
+        $('#input_type').append('<option value="sequence">Sequence</option>');
+        break;
     }
+    show_data_input();
   }
 
   function show_data_input() {
