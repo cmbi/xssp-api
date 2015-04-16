@@ -1,3 +1,13 @@
+# 4.1.0 (16-04-2015)
+
+	* Remove warning when creating HSSP from sequence (#74)
+	* Specify PDB file format requirements in help tour (#70)
+	* API example now sends files multipart-encoded (#71)
+	* Add feedback(#72), citation(#75), CMBI facilities (#68) links to footer
+	* PDB file is now saved when hsspconv fails (#69)
+	* Remove vagrant (#67)
+	* Add hg-hssp support (#66)
+
 # 4.0.1 (05-11-2014)
 
 	* REST calls require CSRF token (#65)
