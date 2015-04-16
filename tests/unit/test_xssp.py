@@ -101,6 +101,19 @@ def test_sequence_strategy_hssp(mock_get_task):
     eq_(result_id, '12345')
 
 
+@patch('xssp_rest.tasks.get_task')
+def test_sequence_strategy_hg_hssp(mock_get_task):
+    mock_get_task.return_value.__name__ = 'mock_task'
+    mock_get_task.return_value.delay.return_value.id = '12345'
+
+    strategy = SequenceStrategy(
+        'hg_hssp', 'TTCCPSIVARSNFNVCRLPGTPEAICATYTGCIIIPGATCPGDYAN')
+    result_id = strategy()
+    mock_get_task.return_value.delay.assert_called_once_with(
+        'TTCCPSIVARSNFNVCRLPGTPEAICATYTGCIIIPGATCPGDYAN')
+    eq_(result_id, '12345')
+
+
 @raises(ValueError)
 def test_sequence_strategy_dssp():
     strategy = SequenceStrategy('dssp', '1crn')

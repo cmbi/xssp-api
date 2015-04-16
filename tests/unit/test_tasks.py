@@ -17,7 +17,8 @@ class TestTasks(object):
                                 'DSSP_ROOT': '/dssp/',
                                 'DSSP_REDO_ROOT': '/dssp_redo/',
                                 'HSSP_ROOT': '/hssp/',
-                                'HSSP_STO_ROOT': '/hssp3/'})
+                                'HSSP_STO_ROOT': '/hssp3/',
+                                'HG_HSSP_ROOT': '/hg-hssp/'})
         cls.celery = create_celery_app(flask_app)
 
     @patch('subprocess.check_output')
@@ -104,6 +105,33 @@ class TestTasks(object):
             error_pdb_path = os.path.join(head, 'None_{}'.format(tail))
             eq_(os.path.isfile(error_pdb_path), True)
             raise
+        finally:
+            os.remove(error_pdb_path)
+
+    @patch('subprocess.check_output')
+    def test_copy_input_when_stockholm_error(self, mock_subprocess):
+        """
+        Tests that when a stockholm file is produced but an error occurs, that
+        the input file is copied for debugging.
+
+        See https://github.com/cmbi/xssp-rest/issues/69.
+        """
+        mock_subprocess.side_effect = [
+            "output1",
+            subprocess.CalledProcessError("returncode", "cmd", "output")]
+
+        tmp_file = tempfile.NamedTemporaryFile(prefix='fake', suffix='.pdb',
+                                               delete=False)
+
+        from xssp_rest.tasks import mkhssp_from_pdb
+        try:
+            result = mkhssp_from_pdb.delay(tmp_file.name, 'hssp_hssp')
+            result.get()
+        except RuntimeError:
+            head, tail = os.path.split(tmp_file.name)
+            # request id is None
+            error_pdb_path = os.path.join(head, 'None_{}'.format(tail))
+            eq_(os.path.isfile(error_pdb_path), True)
         finally:
             os.remove(error_pdb_path)
 
@@ -248,6 +276,25 @@ class TestTasks(object):
         eq_(content, 'data')
         mock_exists.assert_called_once_with('/hssp3/1crn.hssp.bz2')
 
+    @patch('bz2.BZ2File')
+    @patch('os.path.exists', return_value=True)
+    def test_get_hg_hssp(self, mock_exists, mock_bz2file):
+        instance = mock_bz2file.return_value
+        instance.__enter__.return_value.read.return_value = 'data'
+
+        from xssp_rest.tasks import get_hg_hssp
+        content = get_hg_hssp('TTCCPSIVARSNFNVCRLPGTPEAICATYTGCIIIPGATCPGDYAN')
+
+        eq_(content, 'data')
+        mock_exists.assert_called_once_with(
+            '/hg-hssp/c6a0deb5-0c4f-3961-9d19-3f0fde0517c2.sto.bz2')
+
+    @patch('os.path.exists', return_value=False)
+    @raises(RuntimeError)
+    def test_get_hg_hssp_file_not_found(self, mock_exists):
+        from xssp_rest.tasks import get_hg_hssp
+        get_hg_hssp('TTCCPSIVARSNFNVCRLPGTPEAICATYTGCIIIPGATCPGDYAN')
+
     @raises(ValueError)
     def test_get_hssp_unexpected_output_type(self):
         from xssp_rest.tasks import get_hssp
@@ -283,6 +330,8 @@ class TestTasks(object):
         eq_(task.__name__, 'mkhssp_from_sequence')
         task = get_task('sequence', 'hssp_stockholm')
         eq_(task.__name__, 'mkhssp_from_sequence')
+        task = get_task('sequence', 'hg_hssp')
+        eq_(task.__name__, 'get_hg_hssp')
 
     @raises(ValueError)
     def test_get_task_invalid_combination_pdb_redo_id_hssp(self):

@@ -31,11 +31,6 @@
                        placeholder='Enter a PDB code') }}
       </div>
       <div id="sequence_div" class="form-group hidden">
-        <div class="alert alert-warning" role="alert">
-          <span class="glyphicon glyphicon-warning-sign"></span>
-          The input sequence will be aligned against the HSSP alignment
-          from the most similar PDB sequence.
-        </div>
         {{ form.sequence(class_='form-control',
                          placeholder='Enter a protein sequence',
                          rows="3") }}
@@ -103,7 +98,12 @@
         $('#input_type').append('<option value="pdb_file">PDB File</option>');
         $('#input_type').append('<option value="sequence">Sequence</option>');
         break;
+      case 'hg_hssp':
+        $('#input_type').empty();
+        $('#input_type').append('<option value="sequence">Sequence</option>');
+        break;
     }
+    show_data_input();
   }
 
   function show_data_input() {
@@ -136,6 +136,12 @@
         show_sequence_input();
         break;
       }
+  }
+
+  function get_query_param(param) {
+    var result =  window.location.search.match(
+        new RegExp("(\\?|&)" + param + "(\\[\\])?=([^&]*)"));
+    return result ? result[3] : false;
   }
 
   $(document).on('change', '.btn-file :file', function() {
@@ -205,7 +211,11 @@
                  "upload." +
                  "<br><br>PDB files are accepted in both PDB format and " +
                  "mmCIF format. Additionally, compressed .gz and .bz2 files" +
-                 " can be uploaded."
+                 " can be uploaded." +
+                 "<br><br>The coordinates and occupancies of all backbone " +
+                 "atoms should be present in PDB format. If present, " +
+                 "<code>SOURCE</code> records should not be empty. If " +
+                 "present, B-factors should have meaningful values."
       },
       {
         element: "#sequence_div",
@@ -225,6 +235,12 @@
       }
     ]});
     tour.init();
+
+    // Start the tour automatically if redirected to the index page via the
+    // help button.
+    if (get_query_param('tour')) {
+      tour.restart();
+    }
 
     $('#start_tour').click(function() { tour.restart(); });
 

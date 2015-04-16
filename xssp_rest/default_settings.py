@@ -7,6 +7,7 @@ CELERY_QUEUES = (
     Queue('xssp', Exchange('xssp'), routing_key='xssp'),
 )
 CELERY_RESULT_BACKEND = 'redis://localhost/0'
+CELERY_TRACK_STARTED = True
 
 # xssp
 XSSP_DATABANKS = ['/data/fasta/sprot.fasta', '/data/fasta/trembl.fasta']

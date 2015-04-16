@@ -26,6 +26,7 @@ def index():
                                 output_type=form.output_type.data,
                                 celery_id=celery_id))
     _log.info("Rendering index page")
+
     return render_template("dashboard/index.html", form=form)
 
 

@@ -20,7 +20,8 @@ class XsspForm(Form):
     output_type = SelectField(u'Output',
                               choices=[('dssp', 'DSSP'),
                                        ('hssp_hssp', 'HSSP'),
-                                       ('hssp_stockholm', 'HSSP (Stockholm)')])
+                                       ('hssp_stockholm', 'HSSP (Stockholm)'),
+                                       ('hg_hssp', 'HSSP (Human Genome)')])
     pdb_id = TextField(u'PDB code', [NotRequiredIfOneOf(['sequence', 'file_']),
                                      Regexp(regex=RE_PDB_ID)])
     sequence = TextAreaField(u'Sequence', [

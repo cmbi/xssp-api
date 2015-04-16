@@ -4,32 +4,36 @@ xssp-rest is a REST wrapper around the [xssp][1] `mkhssp` and `mkdssp`
 applications. It uses a celery queue to manage requests to prevent overloading
 the machine.
 
-# Deploy
+# Development
 
-A [fabfile][2] is provided to automate the deployment. To start deployment,
-download the code to your local machine and run `fab deploy`. You will be
-prompted for a deployment mode, which can be either `test` or `prod`.
+## Installation
 
-Some aspects of the deployment script require manual interaction.
+Clone the repository and cd into the project folder:
 
-## Test
+    git clone https://github.com/cmbi/xssp-rest.git
+    cd xssp-rest
 
-The `test` mode deploys to [VirtualBox][3] virtual machine using [vagrant][4].
-You will need to install these packages in order to use this mode, and run
-`vagrant up` from the project's root folder.
+Create a python virtual environment:
 
-This mode should be used for testing purposes.
+    mkvirtualenv --no-site-packages xssp-rest
 
-This mode always deploys the `develop` branch.
+Install the dependencies:
 
-## Production
+    pip install -r requirements
+    bower install
 
-The `production` mode deploys to the host given by the user when prompted. This
-mode should be used for deploying to the production environment.
+Run the unit tests to check that everything works:
 
-This mode always deploys the `master` branch.
+    ./test_unit.sh
+
+## Running
+
+Open a terminal window and run:
+
+    ./run.sh
+
+Open another terminal window and run:
+
+    ./run_celery.sh
 
 [1]: https://github.com/cmbi/xssp
-[2]: http://www.fabfile.org/en/latest/
-[3]: http://virtualbox.org/
-[4]: http://www.vagrantup.com/
