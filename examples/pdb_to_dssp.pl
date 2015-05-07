@@ -1,5 +1,5 @@
 =begin
-This example client takes a PDB file, sends it to the REST service, which
+This example client takes a PDB file, sends it to the REST service that
 creates the DSSP data, which is written to a DSSP file.
 
 Example:
