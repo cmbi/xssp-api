@@ -3,17 +3,22 @@
 {% block content %}
 
 <h2>API Examples</h2>
-<h3>Python</h3>
-
-<p>
-  This example generates HSSP data from the PDB data for 1CRN. The PDB data is
-  sent to the server, which returns a job ID. This means that the server is
-  currently processing the request. Every five seconds the status of the
-  request is queried, and when it's success, the result is requested and printed
-  to the console.
-</p>
-
-<pre>
+<div class="tabbable">
+  <ul class="nav nav-tabs">
+    <li class="active"><a href="#python" data-toggle="tab">Python</a></li>
+    <li><a href="#perl" data-toggle="tab">Perl</a></li>
+  </ul>
+  <div class="tab-content">
+    <div id="python" class="tab-pane active">
+      <br/>
+      <p>
+      This example generates HSSP data from the PDB data for 1CRN. The PDB data
+      is sent to the server, which returns a job ID. This means that the server
+      is currently processing the request. Every five seconds the status of the
+      request is queried, and when it's success, the result is requested and
+      printed to the console.
+      </p>
+      <pre>
 <code class="python">
 """
 This example client takes a PDB file, sends it to the REST service, which
@@ -98,20 +103,18 @@ if __name__ == "__main__":
     result = pdb_to_hssp(args.pdb_file_path, args.rest_url)
     print result
 </code>
-</pre>
-
-
-<h3>Perl</h3>
-
-<p>
-  This example generates a DSSP file for 1CRN. The PDB data is
-  sent to the server, which returns a job ID. This means that the server is
-  currently processing the request. Every five seconds the status of the
-  request is queried, and when it's success, the result is requested and a DSSP
-  file is created.
-</p>
-
-<pre>
+      </pre>
+    </div>
+    <div id="perl" class="tab-pane">
+      <br/>
+      <p>
+      This example generates a DSSP file for 1CRN. The PDB data is sent to the
+      server, which returns a job ID. This means that the server is currently
+      processing the request. Every five seconds the status of the request is
+      queried, and when it's success, the result is requested and a DSSP file
+      is created.
+      </p>
+      <pre>
 <code class="perl">
 =begin
 This example client takes a PDB file, sends it to the REST service that
@@ -193,7 +196,11 @@ open(my $g, ">$output") or die "Could not open output file: $!\n";
 print $g $result;
 close($g);
 </code>
-</pre>
+      </pre>
+    </div>
+  </div>
+</div>
+
 
 {% endblock %}
 
