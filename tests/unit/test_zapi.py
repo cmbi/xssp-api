@@ -164,7 +164,7 @@ class TestEndpoints(object):
         rv = self.app.get('/api/')
         eq_(rv.status_code, 200)
 
-        excluded_fs = ['api_doc', 'api_example']
+        excluded_fs = ['api_doc', 'api_examples']
         for f_name, f in inspect.getmembers(endpoints, inspect.isfunction):
             mod_name = inspect.getmodule(f).__name__
             if "xssp_rest.frontend.api.endpoints" in mod_name and \

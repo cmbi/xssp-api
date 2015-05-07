@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>API Examples</h2>
+<div class="tabbable">
+  <ul class="nav nav-tabs">
+    <li class="active"><a href="#python" data-toggle="tab">Python</a></li>
+    <li><a href="#perl" data-toggle="tab">Perl</a></li>
+  </ul>
+  <div class="tab-content">
+    <div id="python" class="tab-pane active">
+      <br/>
+      <p>
+      This example generates HSSP data from the PDB data for 1CRN. The PDB data
+      is sent to the server, which returns a job ID. This means that the server
+      is currently processing the request. Every five seconds the status of the
+      request is queried, and when it's success, the result is requested and
+      printed to the console.
+      </p>
+      <pre>
+<code class="python">
+"""
+This example client takes a PDB file, sends it to the REST service, which
+creates HSSP data. The HSSP data is then output to the console.
+
+Example:
+
+    python pdb_to_hssp.py 1crn.pdb http://www.cmbi.umcn.nl/xssp/
+"""
+
+import argparse
+import json
+import requests
+import time
+
+
+def pdb_to_hssp(pdb_file_path, rest_url):
+    # Read the pdb file data into a variable
+    files = {'file_': open(pdb_file_path, 'rb')}
+
+    # Send a request to the server to create hssp data from the pdb file data.
+    # If an error occurs, an exception is raised and the program exits. If the
+    # request is successful, the id of the job running on the server is
+    # returned.
+    url_create = '{}api/create/pdb_file/hssp_hssp/'.format(rest_url)
+    r = requests.post(url_create, files=files)
+    r.raise_for_status()
+
+    job_id = json.loads(r.text)['id']
+    print "Job submitted successfully. Id is: '{}'".format(job_id)
+
+    # Loop until the job running on the server has finished, either successfully
+    # or due to an error.
+    ready = False
+    while not ready:
+        # Check the status of the running job. If an error occurs an exception
+        # is raised and the program exits. If the request is successful, the
+        # status is returned.
+        url_status = '{}api/status/pdb_file/hssp_hssp/{}/'.format(rest_url,
+                                                                  job_id)
+        r = requests.get(url_status)
+        r.raise_for_status()
+
+        status = json.loads(r.text)['status']
+        print "Job status is: '{}'".format(status)
+
+        # If the status equals SUCCESS, exit out of the loop by changing the
+        # condition ready. This causes the code to drop into the `else` block
+        # below.
+        #
+        # If the status equals either FAILURE or REVOKED, an exception is raised
+        # containing the error message. The program exits.
+        #
+        # Otherwise, wait for five seconds and start at the beginning of the
+        # loop again.
+        if status == 'SUCCESS':
+            ready = True
+        elif status in ['FAILURE', 'REVOKED']:
+            raise Exception(json.loads(r.text)['message'])
+        else:
+            time.sleep(5)
+    else:
+        # Requests the result of the job. If an error occurs an exception is
+        # raised and the program exits. If the request is successful, the result
+        # is returned.
+        url_result = '{}api/result/pdb_file/hssp_hssp/{}/'.format(rest_url,
+                                                                  job_id)
+        r = requests.get(url_result)
+        r.raise_for_status()
+        result = json.loads(r.text)['result']
+
+        # Return the result to the caller, which prints it to the screen.
+        return result
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Create HSSP from a PDB file')
+    parser.add_argument('pdb_file_path')
+    parser.add_argument('rest_url')
+    args = parser.parse_args()
+
+    result = pdb_to_hssp(args.pdb_file_path, args.rest_url)
+    print result
+</code>
+      </pre>
+    </div>
+    <div id="perl" class="tab-pane">
+      <br/>
+      <p>
+      This example generates a DSSP file for 1CRN. The PDB data is sent to the
+      server, which returns a job ID. This means that the server is currently
+      processing the request. Every five seconds the status of the request is
+      queried, and when it's success, the result is requested and a DSSP file
+      is created.
+      </p>
+      <pre>
+<code class="perl">
+=begin
+This example client takes a PDB file, sends it to the REST service that
+creates the DSSP data, which is written to a DSSP file.
+
+Example:
+
+    perl pdb_to_dssp.pl 1crn.pdb 1crn.dssp
+=cut
+
+
+use strict;
+use warnings;
+use HTTP::Request::Common;
+use LWP::UserAgent;
+use JSON qw( decode_json );
+
+
+my $url_xssp = "http://www.cmbi.umcn.nl/xssp/";
+my $ua = LWP::UserAgent->new;
+my $input = shift;
+my $output = shift;
+
+
+die "Usage: pdb_to_dssp.pl <infile> <outfile>\n" unless -f $input and \
+  defined $output;
+
+
+# Sends a request to the server to create a dssp file from the pdb file data.
+# If an error occurs the program exits.
+my $url_create = $url_xssp . "api/create/pdb_file/dssp/";
+my $response = $ua->request(POST $url_create,
+  Content_Type => "multipart/form-data",
+  Content => [
+    file_ => [$input],
+  ]);
+die $response->status_line unless $response->is_success;
+
+
+# If the request is successful, the id of the job running on the server is
+# returned.
+my $content = decode_json($response->content);
+my $id = $content->{'id'};
+
+
+# Loops unil the job running on the server has finished, either successfully
+# or due to an error.
+my $ready = 0;
+until ($ready) {
+  # Check the status of the running job.
+  # If an error occurs the program exits.
+  my $url_status = $url_xssp . "api/status/pdb_file/dssp/" . $id . "/";
+  $response = $ua->request(GET $url_status);
+  die $response->status_line unless $response->is_success;
+
+  # If the request is successful, the status is returned.
+  my $content = decode_json($response->content);
+  my $status = $content->{'status'};
+  print "Job status is: " . $status . "\n";
+
+  if ($status eq 'SUCCESS') {
+    $ready = 1;
+  } elsif ($status eq 'FAILURE' or $status eq 'REVOKED') {
+    die $status;
+  } else {
+    sleep 5;
+  }
+}
+
+
+# Requests the result of the job. If an error occurs the program exits.
+my $url_result = $url_xssp . "api/result/pdb_file/dssp/" . $id . "/";
+$response = $ua->request(GET $url_result);
+die $response->status_line unless $response->is_success;
+
+$content = decode_json($response->content);
+my $result = $content->{'result'};
+open(my $g, ">$output") or die "Could not open output file: $!\n";
+print $g $result;
+close($g);
+</code>
+      </pre>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block js %}
+<script>hljs.initHighlightingOnLoad();</script>
+{% endblock %}

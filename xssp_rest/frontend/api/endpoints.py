@@ -107,6 +107,6 @@ def api_doc():
     return render_template('api/docs.html', docs=docs)
 
 
-@bp.route('/example', methods=['GET'])
-def api_example():
-    return render_template('api/example.html')  # pragma: no cover
+@bp.route('/examples', methods=['GET'])
+def api_examples():
+    return render_template('api/examples.html')  # pragma: no cover
