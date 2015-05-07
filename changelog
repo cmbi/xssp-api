@@ -1,3 +1,8 @@
+# 4.1.1 (07-05-2015)
+
+	* Update PDB format requirements (#77) for xssp-2.2.6.
+	* Add perl API example (#76)
+
 # 4.1.0 (16-04-2015)
 
 	* Remove warning when creating HSSP from sequence (#74)
