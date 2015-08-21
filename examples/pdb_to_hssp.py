@@ -31,6 +31,8 @@ def pdb_to_hssp(pdb_file_path, rest_url):
     # Loop until the job running on the server has finished,
     # either successfully or due to an error.
     ready = False
+    n_polls = 0
+    max_polls = 240
     while not ready:
         # Check the status of the running job. If an error occurs an exception
         # is raised and the program exits. If the request is successful, the
@@ -50,14 +52,20 @@ def pdb_to_hssp(pdb_file_path, rest_url):
         # If the status equals either FAILURE or REVOKED, an exception is
         # raised containing the error message. The program exits.
         #
-        # Otherwise, wait for five seconds and start at the beginning of the
+        # Otherwise, wait for thirty seconds and start at the beginning of the
         # loop again.
         if status == 'SUCCESS':
             ready = True
         elif status in ['FAILURE', 'REVOKED']:
             raise Exception(json.loads(r.text)['message'])
         else:
-            time.sleep(5)
+            n_polls = n_polls + 1
+
+        # Stop waiting when there appears to be a server-side problem
+        if n_polls > max_polls:
+            raise Exception('The server is taking too long to finish the job.')
+
+        time.sleep(30)
     else:
         # Requests the result of the job. If an error occurs an exception is
         # raised and the program exits. If the request is successful,

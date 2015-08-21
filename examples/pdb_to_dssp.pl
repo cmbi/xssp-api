@@ -42,9 +42,11 @@ my $content = decode_json($response->content);
 my $id = $content->{'id'};
 
 
-# Loops unil the job running on the server has finished, either successfully
+# Loops until the job running on the server has finished, either successfully
 # or due to an error.
 my $ready = 0;
+my $max_polls = 24;
+my $n_polls = 0;
 until ($ready) {
   # Check the status of the running job.
   # If an error occurs the program exits.
@@ -62,8 +64,13 @@ until ($ready) {
   } elsif ($status eq 'FAILURE' or $status eq 'REVOKED') {
     die $status;
   } else {
-    sleep 5;
+    $n_polls += 1;
   }
+   # Stop waiting when there appears to be a server-side problem
+  if ($n_polls > $max_polls) {
+    die "The server is taking too long to finish the job.\n";
+  }
+  sleep 5;
 }
 
 
