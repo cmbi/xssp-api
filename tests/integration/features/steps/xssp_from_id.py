@@ -22,6 +22,8 @@ FMT_CREATE = '{}create/{}/{}/'
 FMT_STATUS = '{}status/{}/{}/{}/'
 FMT_WHY_NOT_PRESENT = 'http://www.cmbi.ru.nl/WHY_NOT2/resources/list/{}'
 
+MAX_POLLS = 24
+
 
 @given('the list of existing "{xssp}" entries')
 def step_given_existing_entries(context, xssp):
@@ -50,6 +52,7 @@ def step_when_xssp_format_request(context, output_format):
 
 @then('the status should be "{status}"')
 def step_then_status_success(context, status):
+    n_polls = 0
     while True:
         context.url_status = FMT_STATUS.format(XSSP_URL, 'pdb_id',
                                                context.output_format,
@@ -70,6 +73,11 @@ def step_then_status_success(context, status):
                     'pdb_id', context.output_format, context.test_id, msg))
             break
         else:
-            _log.debug('Waiting 5 more seconds...')
-            time.sleep(5)
+            n_polls = n_polls + 1
+
+        if n_polls > MAX_POLLS:
+            raise Exception('The server is taking too long to finish the job')
+
+        _log.debug('Waiting 5 more seconds...')
+        time.sleep(5)
     _log.info('Done!')
