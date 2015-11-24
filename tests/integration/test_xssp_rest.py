@@ -21,6 +21,8 @@ FMT_CREATE = '{}create/{}/{}/'
 FMT_STATUS = '{}status/{}/{}/{}/'
 FMT_WHY_NOT_PRESENT = 'http://www.cmbi.ru.nl/WHY_NOT2/resources/list/{}'
 
+MAX_POLLS = 24
+
 
 class TestApi(object):
     """Integration tests fot the XSSP-REST API."""
@@ -53,6 +55,7 @@ class TestApi(object):
                 r.raise_for_status()
                 job_id = json.loads(r.text)['id']
 
+                n_polls = 0
                 while True:
                     url_status = FMT_STATUS.format(XSSP_URL, input_type,
                                                    output_type, job_id)
@@ -72,8 +75,14 @@ class TestApi(object):
                                 input_type, output_type, pdb_id, msg))
                         break
                     else:
-                        _log.debug('Waiting 5 more seconds...')
-                        time.sleep(5)
+                        n_polls = n_polls + 1
+
+                    if n_polls > MAX_POLLS:
+                        raise Exception('The server is taking too long to '
+                                        'finish the job')
+
+                    _log.debug('Waiting 5 more seconds...')
+                    time.sleep(5)
                 _log.info('Done!')
 
     def test_input_id_existing_hssp(self):
