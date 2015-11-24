@@ -9,12 +9,25 @@ import textwrap
 import uuid
 
 from celery import current_app as celery_app
+from celery.signals import setup_logging
 from flask import current_app as flask_app
 
 from xssp_rest.frontend.validators import RE_FASTA_DESCRIPTION
 
 
 _log = logging.getLogger(__name__)
+
+
+@setup_logging.connect
+def setup_logging_handler(*args, **kwargs):
+    # By default, celery creates a StreamHandler on the root logger, which
+    # results in duplicate log messages.
+    #
+    # Handling this signals allows us to control the loggers created and
+    # prevent duplicate logging.
+    #
+    # For now, no loggers are created in celery.
+    pass
 
 
 @celery_app.task(bind=True)

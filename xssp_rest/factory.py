@@ -36,7 +36,7 @@ def create_app(settings=None):
     # It is somewhat dubious to get _log from the root package, but I can't see
     # a better way. Having the email handler configured at the root means all
     # child loggers inherit it.
-    from xssp_rest import _log as root_logger
+    from xssp_rest import _log as xssp_logger
 
     # Only log to email during production.
     if not app.debug and not app.testing:  # pragma: no cover
@@ -46,7 +46,7 @@ def create_app(settings=None):
                                    app.config["MAIL_TO"],
                                    "xssp-rest failed")
         mail_handler.setLevel(logging.ERROR)
-        root_logger.addHandler(mail_handler)
+        xssp_logger.addHandler(mail_handler)
         mail_handler.setFormatter(
             logging.Formatter("Message type: %(levelname)s\n" +
                               "Location: %(pathname)s:%(lineno)d\n" +
@@ -56,20 +56,21 @@ def create_app(settings=None):
                               "Message:\n" +
                               "%(message)s"))
 
-    # Only log to the console during development and production, but not
-    # during testing.
-    if not app.testing:  # pragma: no cover
+    # Only log to the console during development and production, but not during
+    # testing.
+    if app.testing:
+        xssp_logger.setLevel(logging.DEBUG)
+    else:
         ch = logging.StreamHandler()
         formatter = logging.Formatter(
             '%(asctime)s - %(levelname)s - %(message)s')
         ch.setFormatter(formatter)
-        root_logger.addHandler(ch)
+        xssp_logger.addHandler(ch)
 
-    # Only log debug messages during development
-    if app.debug:  # pragma: no cover
-        root_logger.setLevel(logging.DEBUG)
-    else:
-        root_logger.setLevel(logging.INFO)
+        if app.debug:
+            xssp_logger.setLevel(logging.DEBUG)
+        else:
+            xssp_logger.setLevel(logging.INFO)
 
     # Check if the upload folder exists and create it if it doesn't
     if not os.path.exists(app.config['UPLOAD_FOLDER']):  # pragma: no cover
