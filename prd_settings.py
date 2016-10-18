@@ -16,5 +16,5 @@ MAIL_TO = ["Jon.Black@radboudumc.nl", "Coos.Baakman@radboudumc.nl"]
 DSSP_ROOT = '/mnt/cmbi4/dssp/'
 DSSP_REDO_ROOT = '/mnt/cmbi4/dssp_redo/'
 HSSP_ROOT = '/mnt/cmbi4/hssp/'
-HG_HSSP_ROOT = '/data/hg-hssp'
+HG_HSSP_ROOT = '/mnt/cmbi4/hg-hssp'
 HSSP_STO_ROOT = '/mnt/cmbi4/hssp3/'
