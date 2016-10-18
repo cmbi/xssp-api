@@ -94,6 +94,14 @@ def mkhssp_from_sequence(sequence, output_format):
 
     If present, the input FASTA description line is used.
     """
+
+    if output_format == 'hssp_stockholm':
+        try:
+            output = get_hg_hssp(sequence)
+            return output
+        except RuntimeError e:
+            _log.info("hg-hssp content cannot be acquired, continuing without")
+
     # The temporary file name must end in .fasta, otherwise mkhssp assumes it's
     # a PDB file.
     tmp_file = tempfile.NamedTemporaryFile(prefix='hssp_rest_tmp',
@@ -162,7 +170,6 @@ def get_hssp(pdb_id, output_type):
     return hssp_content
 
 
-@celery_app.task
 def get_hg_hssp(sequence):
     _log.info("Getting hg-hssp data for '{}'".format(sequence))
 
@@ -252,8 +259,6 @@ def get_task(input_type, output_type):
         if output_type == 'hssp_hssp' or \
            output_type == 'hssp_stockholm':
             task = mkhssp_from_sequence
-        elif output_type == 'hg_hssp':
-            task = get_hg_hssp
         else:
             raise ValueError("Invalid input and output combination")
     else:

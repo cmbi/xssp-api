@@ -85,6 +85,20 @@ class TestApi(object):
                     time.sleep(5)
                 _log.info('Done!')
 
+    def test_input_id_existing_hg_hssp(self):
+        """Tests that existing HG-HSSP files can be retrieved.
+
+        The test tries to get a known existing HG-HSSP file
+        using the XSSP REST API.
+        """
+        test_seqs = ['MLAGAGRPGLPQGRHLCWLLCAFTLKLCQAEAPVQEEKLSASTSNLPCWLVEE' +
+        'FVVAEECSPCSNFRAKTTPECGPTGYVEKITCSSSKRNEFKSCRSALMEQRLFWKFEGAVVCVALI' +
+        'FACLVIIRQRQLDRKALEKVRKQIESI']
+        _log.info('Testing an existing hssp input: {}'.format(
+            ' '.join(test_seqs)))
+        self._test_input_ids('sequence', ['hssp_stockholm'],
+                             test_seqs)
+
     def test_input_id_existing_hssp(self):
         """Tests that existing HSSP files can be retrieved.
 
