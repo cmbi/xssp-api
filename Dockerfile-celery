@@ -1,0 +1,32 @@
+FROM python:2.7-onbuild
+
+RUN mkdir /deps
+
+RUN apt-get update ;\
+    apt-get install -y make rsync wget git g++ libboost-all-dev libbz2-dev \
+                       doxygen xsltproc docbook docbook-xsl docbook-xml \
+                       autoconf automake autotools-dev
+RUN mkdir -p /deps
+
+# libzeep
+
+RUN git clone https://github.com/mhekkel/libzeep.git /deps/libzeep ;\
+    cd /deps/libzeep ;\
+    git checkout tags/v3.0.3
+# Workaround due to bug in libzeep's makefile
+RUN sed -i '71s/.*/\t\$\(CXX\) \-shared \-o \$@ \-Wl,\-soname=\$\(SO_NAME\) \$\(OBJECTS\) \$\(LDFLAGS\)/' /deps/libzeep/makefile
+WORKDIR /deps/libzeep
+# Run ldconfig manually to work around a bug in libzeep's makefile
+RUN make -j ; make install ; ldconfig
+
+# xssp
+
+RUN git clone https://github.com/cmbi/xssp.git /deps/xssp ;\
+    cd /deps/xssp ;\
+    git checkout tags/2.2.8
+WORKDIR /deps/xssp
+RUN aclocal ; autoheader ; automake --add-missing ; autoconf
+RUN ./configure ; make -j ; make install
+
+WORKDIR /usr/src/app
+ENV C_FORCE_ROOT true

@@ -1,0 +1,31 @@
+version: "2"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile-web
+    depends_on:
+      - redis
+      - celery
+    command: gunicorn -k gevent -b 0.0.0.0:5002 xssp_rest.application:app
+    ports:
+      - "5002:5002"
+    environment:
+      - XSSP_REST_SETTINGS=/usr/src/app/prd_settings.py
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile-celery
+    depends_on:
+      - rabbitmq
+      - redis
+    command: celery -A xssp_rest.application:celery worker -B -n xssp.%n
+    environment:
+      - XSSP_REST_SETTINGS=/usr/src/app/prd_settings.py
+    volumes:
+      - "/mnt/cmbi4:/mnt/cmbi4"
+  redis:
+    image: redis
+  rabbitmq:
+    image: rabbitmq
