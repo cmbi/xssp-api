@@ -290,13 +290,6 @@ class TestTasks(object):
         mock_exists.assert_called_once_with(
             '/hg-hssp/c6a0deb5-0c4f-3961-9d19-3f0fde0517c2.sto.bz2')
 
-#    @patch('os.path.exists', return_value=False)
-#    @raises(RuntimeError)
-#    def test_get_hg_hssp_file_not_found(self, mock_exists):
-#        from xssp_rest.tasks import mkhssp_from_sequence
-#        mkhssp_from_sequence('TTCCPSIVARSNFNVCRLPGTPEAICATYTGCIIIPGATCPGDYAN',
-#                             'stockholm')
-
     @raises(ValueError)
     def test_get_hssp_unexpected_output_type(self):
         from xssp_rest.tasks import get_hssp
