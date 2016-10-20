@@ -325,8 +325,6 @@ class TestTasks(object):
         eq_(task.__name__, 'mkhssp_from_sequence')
         task = get_task('sequence', 'hssp_stockholm')
         eq_(task.__name__, 'mkhssp_from_sequence')
-#        task = get_task('sequence', 'hg_hssp')
-#        eq_(task.__name__, 'get_hg_hssp')
 
     @raises(ValueError)
     def test_get_task_invalid_combination_pdb_redo_id_hssp(self):
