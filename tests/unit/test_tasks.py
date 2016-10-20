@@ -282,18 +282,13 @@ class TestTasks(object):
         instance = mock_bz2file.return_value
         instance.__enter__.return_value.read.return_value = 'data'
 
-        from xssp_rest.tasks import get_hg_hssp
-        content = get_hg_hssp('TTCCPSIVARSNFNVCRLPGTPEAICATYTGCIIIPGATCPGDYAN')
-
+        from xssp_rest.tasks import mkhssp_from_sequence
+        result = mkhssp_from_sequence.delay('TTCCPSIVARSNFNVCRLPGTPEAICATYTGCIIIPGATCPGDYAN',
+                                            'hssp_stockholm')
+        content = result.get()
         eq_(content, 'data')
         mock_exists.assert_called_once_with(
             '/hg-hssp/c6a0deb5-0c4f-3961-9d19-3f0fde0517c2.sto.bz2')
-
-    @patch('os.path.exists', return_value=False)
-    @raises(RuntimeError)
-    def test_get_hg_hssp_file_not_found(self, mock_exists):
-        from xssp_rest.tasks import get_hg_hssp
-        get_hg_hssp('TTCCPSIVARSNFNVCRLPGTPEAICATYTGCIIIPGATCPGDYAN')
 
     @raises(ValueError)
     def test_get_hssp_unexpected_output_type(self):
@@ -330,8 +325,6 @@ class TestTasks(object):
         eq_(task.__name__, 'mkhssp_from_sequence')
         task = get_task('sequence', 'hssp_stockholm')
         eq_(task.__name__, 'mkhssp_from_sequence')
-        task = get_task('sequence', 'hg_hssp')
-        eq_(task.__name__, 'get_hg_hssp')
 
     @raises(ValueError)
     def test_get_task_invalid_combination_pdb_redo_id_hssp(self):
