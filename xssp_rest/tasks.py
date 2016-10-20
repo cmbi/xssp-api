@@ -99,7 +99,7 @@ def mkhssp_from_sequence(sequence, output_format):
         try:
             output = get_hg_hssp(sequence)
             return output
-        except RuntimeError e:
+        except RuntimeError as e:
             _log.info("hg-hssp content cannot be acquired, continuing without")
 
     # The temporary file name must end in .fasta, otherwise mkhssp assumes it's
@@ -186,6 +186,7 @@ def get_hg_hssp(sequence):
     path = os.path.join(flask_app.config['HG_HSSP_ROOT'],
                         sequence_hash + '.sto.bz2')
 
+    _log.debug("Checking for existence of {}".format(path))
     if not os.path.exists(path):
         raise RuntimeError("File not found: '{}'".format(path))
 
@@ -260,7 +261,8 @@ def get_task(input_type, output_type):
            output_type == 'hssp_stockholm':
             task = mkhssp_from_sequence
         else:
-            raise ValueError("Invalid input and output combination")
+            raise ValueError("Invalid input and output combination: {},{}"
+                             .format(input_type, output_type))
     else:
         raise ValueError("Unexpected input_type '{}'".format(input_type))
 
