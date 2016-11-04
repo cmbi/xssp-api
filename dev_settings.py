@@ -7,14 +7,7 @@ DEBUG_TB_ENABLED = DEBUG
 DEBUG_TB_INTERCEPT_REDIRECTS = False
 
 # Email logging settings
-MAIL_SERVER = "131.174.165.22"
+MAIL_SERVER = "smtp.umcn.nl"
 MAIL_SMTP_PORT = 25
 MAIL_FROM = "xssp-rest@cmbi.umcn.nl"
-MAIL_TO = ["Jon.Black@radboudumc.nl", "Wouter.Touw@radboudumc.nl"]
-
-# HSSP and DSSP databank locations
-DSSP_ROOT = '/mnt/cmbi4/dssp/'
-DSSP_REDO_ROOT = '/mnt/cmbi4/dssp_redo/'
-HSSP_ROOT = '/mnt/cmbi4/hssp/'
-HG_HSSP_ROOT = '/data/hg-hssp/'
-HSSP_STO_ROOT = '/mnt/cmbi4/hssp3/'
+MAIL_TO = ["Jon.Black@radboudumc.nl", "Coos.Baakman@radboudumc.nl"]

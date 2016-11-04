@@ -16,3 +16,10 @@ XSSP_DATABANKS = ['/mnt/cmbi4/fasta/uniprot_sprot.fasta',
 # uploads
 UPLOAD_FOLDER = '/tmp/xssp-rest/uploads'
 ALLOWED_EXTENSIONS = ['bdb', 'bz2', 'cif', 'ent', 'gz', 'mcif', 'pdb']
+
+# HSSP and DSSP databank locations
+DSSP_ROOT = '/mnt/cmbi4/dssp/'
+DSSP_REDO_ROOT = '/mnt/cmbi4/dssp_redo/'
+HSSP_ROOT = '/mnt/cmbi4/hssp/'
+HG_HSSP_ROOT = '/mnt/cmbi4/hg-hssp'
+HSSP_STO_ROOT = '/mnt/cmbi4/hssp3/'
