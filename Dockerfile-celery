@@ -1,15 +1,13 @@
-FROM python:2.7-onbuild
+FROM python:2.7
 
+# dependencies
 RUN mkdir /deps
-
 RUN apt-get update ;\
     apt-get install -y make rsync wget git g++ libboost-all-dev libbz2-dev \
                        doxygen xsltproc docbook docbook-xsl docbook-xml \
                        autoconf automake autotools-dev
-RUN mkdir -p /deps
 
 # libzeep
-
 RUN git clone https://github.com/mhekkel/libzeep.git /deps/libzeep ;\
     cd /deps/libzeep ;\
     git checkout tags/v3.0.3
@@ -20,7 +18,6 @@ WORKDIR /deps/libzeep
 RUN make -j ; make install ; ldconfig
 
 # xssp
-
 RUN git clone https://github.com/cmbi/xssp.git /deps/xssp ;\
     cd /deps/xssp ;\
     git checkout tags/2.2.8
@@ -28,5 +25,13 @@ WORKDIR /deps/xssp
 RUN aclocal ; autoheader ; automake --add-missing ; autoconf
 RUN ./configure ; make -j ; make install
 
+# xssp-rest
+RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
+
+COPY requirements.txt /usr/src/app/
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . /usr/src/app
+
+# settings
 ENV C_FORCE_ROOT true

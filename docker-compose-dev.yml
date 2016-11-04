@@ -1,0 +1,16 @@
+version: "2"
+
+services:
+  frontend:
+    volumes:
+      - ".:/usr/src/app"
+    command: watchmedo auto-restart -d /usr/src/app -p "*.py" -D -R -- gunicorn -k gevent -b 0.0.0.0:5002 xssp_rest.application:app
+    environment:
+      - XSSP_REST_SETTINGS=/usr/src/app/dev_settings.py
+
+  celery:
+    volumes:
+      - ".:/usr/src/app"
+    command: watchmedo auto-restart -d /usr/src/app -p "*.py" -D -R -- celery -A xssp_rest.application:celery worker -B -n xssp.%n
+    environment:
+      - XSSP_REST_SETTINGS=/usr/src/app/dev_settings.py

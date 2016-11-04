@@ -1,10 +1,11 @@
 version: "2"
 
 services:
-  web:
+
+  frontend:
     build:
       context: .
-      dockerfile: Dockerfile-web
+      dockerfile: Dockerfile-frontend
     depends_on:
       - redis
       - celery
@@ -15,6 +16,7 @@ services:
       - XSSP_REST_SETTINGS=/usr/src/app/prd_settings.py
     volumes_from:
       - data
+
   celery:
     build:
       context: .
@@ -29,10 +31,13 @@ services:
       - "/mnt/cmbi4:/mnt/cmbi4"
     volumes_from:
       - data
+
   redis:
     image: redis
+
   rabbitmq:
     image: rabbitmq
+
   data:
     image: tianon/true
     volumes:
