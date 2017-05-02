@@ -3,7 +3,7 @@ from tempfile import NamedTemporaryFile
 from mock import patch
 from nose.tools import eq_, ok_
 
-from xssp_rest.factory import create_app
+from xssp_api.factory import create_app
 
 
 class TestDashboard(object):
@@ -23,7 +23,7 @@ class TestDashboard(object):
         rv = self.app.get('/')
         eq_(rv.status_code, 200)
 
-    @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
+    @patch('xssp_api.services.xssp.PdbContentStrategy.__call__')
     def test_index_post_hssp_from_pdb(self, mock_call):
         mock_call.return_value = 12345
         tmp_file = NamedTemporaryFile(prefix='fake', suffix='.pdb')
@@ -35,7 +35,7 @@ class TestDashboard(object):
         assert "Please wait while your request is processed" in rv.data
         mock_call.assert_called_once_with()
 
-    @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
+    @patch('xssp_api.services.xssp.SequenceStrategy.__call__')
     def test_index_post_hssp_from_sequence(self, mock_call):
         mock_call.return_value = 12345
         test_sequence = 'ACDEFGHIKLMNPQRSTVWXYACDEFGHIKLMNPQRSTVWXY'
@@ -47,7 +47,7 @@ class TestDashboard(object):
         assert "Please wait while your request is processed" in rv.data
         mock_call.assert_called_once_with()
 
-    @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
+    @patch('xssp_api.services.xssp.SequenceStrategy.__call__')
     def test_index_post_hssp_from_sequence_no_input(self, mock_call):
         mock_call.return_value = 12345
         rv = self.app.post('/', data={'input_type': 'sequence',
@@ -58,7 +58,7 @@ class TestDashboard(object):
         assert "This field is required if &#39;pdb_id&#39; and " + \
                "&#39;file_&#39; have not been provided" in rv.data
 
-    @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
+    @patch('xssp_api.services.xssp.SequenceStrategy.__call__')
     def test_index_post_hssp_from_sequence_invalid_aa(self, mock_call):
         mock_call.return_value = 12345
         test_sequence = 'BJOZ'
@@ -70,7 +70,7 @@ class TestDashboard(object):
         assert 'This field only accepts 1-letter codes from the set ' + \
                '&#34;ACDEFGHIKLMNPQRSTVWXY&#34;' in rv.data
 
-    @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
+    @patch('xssp_api.services.xssp.SequenceStrategy.__call__')
     def test_index_post_hssp_from_sequence_invalid_length(self, mock_call):
         mock_call.return_value = 12345
         test_sequence = 'ACDEFGHIKLMNPQRSTVWXY'
@@ -81,7 +81,7 @@ class TestDashboard(object):
         eq_(rv.status_code, 200)
         assert "Must be at least 25 amino acids long" in rv.data
 
-    @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
+    @patch('xssp_api.services.xssp.PdbContentStrategy.__call__')
     def test_index_post_dssp_from_pdb(self, mock_call):
         mock_call.return_value = 12345
         tmp_file = NamedTemporaryFile(prefix='fake', suffix='.pdb')
@@ -93,7 +93,7 @@ class TestDashboard(object):
         assert "Please wait while your request is processed" in rv.data
         mock_call.assert_called_once_with()
 
-    @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
+    @patch('xssp_api.services.xssp.PdbContentStrategy.__call__')
     def test_index_post_dssp_from_pdb_no_input(self, mock_call):
         mock_call.return_value = 12345
         rv = self.app.post('/', data={'input_type': 'pdb_file',
@@ -104,7 +104,7 @@ class TestDashboard(object):
         assert "This field is required if &#39;pdb_id&#39; and " + \
                "&#39;sequence&#39; have not been provided" in rv.data
 
-    @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
+    @patch('xssp_api.services.xssp.PdbContentStrategy.__call__')
     def test_index_post_dssp_from_pdb_wrong_extension(self, mock_call):
         mock_call.return_value = 12345
         tmp_file = NamedTemporaryFile(prefix='fake', suffix='.mol')

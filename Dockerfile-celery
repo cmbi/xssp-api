@@ -25,7 +25,7 @@ WORKDIR /deps/xssp
 RUN aclocal ; autoheader ; automake --add-missing ; autoconf
 RUN ./configure ; make -j ; make install
 
-# xssp-rest
+# xssp-api
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 

@@ -2,7 +2,7 @@ from mock import Mock
 from nose.tools import eq_, raises
 from wtforms.validators import StopValidation
 
-from xssp_rest.frontend.validators import (FileExtension, NAminoAcids,
+from xssp_api.frontend.validators import (FileExtension, NAminoAcids,
                                            NotRequiredIfOneOf, ValidationError)
 
 

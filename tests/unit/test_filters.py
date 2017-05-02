@@ -1,4 +1,4 @@
-from xssp_rest.frontend.filters import beautify_docstring
+from xssp_api.frontend.filters import beautify_docstring
 
 
 def test_beautify_docstring():

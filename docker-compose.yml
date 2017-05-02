@@ -9,11 +9,11 @@ services:
     depends_on:
       - redis
       - celery
-    command: gunicorn -k gevent -b 0.0.0.0:5002 xssp_rest.application:app
+    command: gunicorn -k gevent -b 0.0.0.0:5002 xssp_api.application:app
     ports:
       - "5002:5002"
     environment:
-      - XSSP_REST_SETTINGS=/usr/src/app/prd_settings.py
+      - XSSP_API_SETTINGS=/usr/src/app/prd_settings.py
     volumes_from:
       - data
 
@@ -24,9 +24,9 @@ services:
     depends_on:
       - rabbitmq
       - redis
-    command: celery -A xssp_rest.application:celery worker -B -n xssp.%n
+    command: celery -A xssp_api.application:celery worker -B -n xssp.%n
     environment:
-      - XSSP_REST_SETTINGS=/usr/src/app/prd_settings.py
+      - XSSP_API_SETTINGS=/usr/src/app/prd_settings.py
     volumes:
       - "/mnt/cmbi4:/mnt/cmbi4"
     volumes_from:
@@ -41,4 +41,4 @@ services:
   data:
     image: tianon/true
     volumes:
-      - /tmp/xssp-rest
+      - /tmp/xssp-api

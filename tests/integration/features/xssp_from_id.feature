@@ -1,8 +1,8 @@
 Feature: XSSP entries
   As a structural bioinformatician
-  I want to inspect existing XSSP entries via XSSP-REST
+  I want to inspect existing XSSP entries via XSSP-API
 
-  Scenario Outline: request XSSP entry via XSSP-REST
+  Scenario Outline: request XSSP entry via XSSP-API
     Given the list of existing "<xssp>" entries
     When we request an existing "<output format>" entry
     Then the status should be "SUCCESS"

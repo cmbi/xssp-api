@@ -1,7 +1,7 @@
 {
-  "name": "xssp-rest",
+  "name": "xssp-api",
   "version": "4.1.1",
-  "homepage": "https://github.com/cmbi/xssp-rest",
+  "homepage": "https://github.com/cmbi/xssp-api",
   "authors": [
     "Jon Black <Jon.Black@radboudumc.nl>",
     "Wouter Touw <Wouter.Touw@radboudumc.nl>"
@@ -12,7 +12,7 @@
     "**/.*",
     "node_modules",
     "bower_components",
-    "xssp_rest/frontend/static/libs",
+    "xssp_api/frontend/static/libs",
     "test",
     "tests"
   ],

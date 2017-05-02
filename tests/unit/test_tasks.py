@@ -5,7 +5,7 @@ import tempfile
 from mock import ANY, call, mock_open, patch
 from nose.tools import eq_, raises
 
-from xssp_rest.factory import create_app, create_celery_app
+from xssp_api.factory import create_app, create_celery_app
 
 
 class TestTasks(object):
@@ -27,7 +27,7 @@ class TestTasks(object):
         tmp_file = tempfile.NamedTemporaryFile(prefix='fake', suffix='.pdb',
                                                delete=False)
 
-        from xssp_rest.tasks import mkdssp_from_pdb
+        from xssp_api.tasks import mkdssp_from_pdb
         result = mkdssp_from_pdb.delay(tmp_file.name)
 
         eq_(result.get(), "output")
@@ -43,7 +43,7 @@ class TestTasks(object):
         tmp_file = tempfile.NamedTemporaryFile(prefix='fake', suffix='.pdb',
                                                delete=False)
 
-        from xssp_rest.tasks import mkdssp_from_pdb
+        from xssp_api.tasks import mkdssp_from_pdb
         try:
             result = mkdssp_from_pdb.delay(tmp_file.name)
             result.get()
@@ -62,7 +62,7 @@ class TestTasks(object):
         tmp_file = tempfile.NamedTemporaryFile(prefix='fake', suffix='.pdb',
                                                delete=False)
 
-        from xssp_rest.tasks import mkhssp_from_pdb
+        from xssp_api.tasks import mkhssp_from_pdb
         result = mkhssp_from_pdb.delay(tmp_file.name, 'hssp_hssp')
 
         eq_(result.get(), "output2")
@@ -77,7 +77,7 @@ class TestTasks(object):
         tmp_file = tempfile.NamedTemporaryFile(prefix='fake', suffix='.pdb',
                                                delete=False)
 
-        from xssp_rest.tasks import mkhssp_from_pdb
+        from xssp_api.tasks import mkhssp_from_pdb
         result = mkhssp_from_pdb.delay(tmp_file.name, 'hssp_stockholm')
 
         eq_(result.get(), "output1")
@@ -95,7 +95,7 @@ class TestTasks(object):
         tmp_file = tempfile.NamedTemporaryFile(prefix='fake', suffix='.pdb',
                                                delete=False)
 
-        from xssp_rest.tasks import mkhssp_from_pdb
+        from xssp_api.tasks import mkhssp_from_pdb
         try:
             result = mkhssp_from_pdb.delay(tmp_file.name, 'hssp_hssp')
             result.get()
@@ -114,7 +114,7 @@ class TestTasks(object):
         Tests that when a stockholm file is produced but an error occurs, that
         the input file is copied for debugging.
 
-        See https://github.com/cmbi/xssp-rest/issues/69.
+        See https://github.com/cmbi/xssp-api/issues/69.
         """
         mock_subprocess.side_effect = [
             "output1",
@@ -123,7 +123,7 @@ class TestTasks(object):
         tmp_file = tempfile.NamedTemporaryFile(prefix='fake', suffix='.pdb',
                                                delete=False)
 
-        from xssp_rest.tasks import mkhssp_from_pdb
+        from xssp_api.tasks import mkhssp_from_pdb
         try:
             result = mkhssp_from_pdb.delay(tmp_file.name, 'hssp_hssp')
             result.get()
@@ -139,7 +139,7 @@ class TestTasks(object):
     def test_mkhssp_from_sequence(self, mock_subprocess):
         mock_subprocess.return_value = "output"
 
-        from xssp_rest.tasks import mkhssp_from_sequence
+        from xssp_api.tasks import mkhssp_from_sequence
         result = mkhssp_from_sequence.delay('sequence', 'hssp_stockholm')
 
         eq_(result.get(), "output")
@@ -152,7 +152,7 @@ class TestTasks(object):
     def test_mkhssp_from_fasta(self, mock_subprocess):
         mock_subprocess.return_value = "output"
 
-        from xssp_rest.tasks import mkhssp_from_sequence
+        from xssp_api.tasks import mkhssp_from_sequence
         result = mkhssp_from_sequence.delay('>test\nseq', 'hssp_stockholm')
 
         eq_(result.get(), "output")
@@ -165,7 +165,7 @@ class TestTasks(object):
     def test_mkhssp_from_sequence_hssp_hssp(self, mock_subprocess):
         mock_subprocess.side_effect = ["output1", "output2"]
 
-        from xssp_rest.tasks import mkhssp_from_sequence
+        from xssp_api.tasks import mkhssp_from_sequence
         result = mkhssp_from_sequence.delay('pdb-content', 'hssp_hssp')
 
         eq_(result.get(), "output2")
@@ -180,7 +180,7 @@ class TestTasks(object):
             "output1",
             subprocess.CalledProcessError("returncode", "cmd", "output")]
 
-        from xssp_rest.tasks import mkhssp_from_sequence
+        from xssp_api.tasks import mkhssp_from_sequence
         result = mkhssp_from_sequence.delay('pdb-content', 'hssp_hssp')
         result.get()
 
@@ -190,29 +190,29 @@ class TestTasks(object):
         mock_subprocess.side_effect = subprocess.CalledProcessError(
             "returncode", "cmd", "output")
 
-        from xssp_rest.tasks import mkhssp_from_sequence
+        from xssp_api.tasks import mkhssp_from_sequence
         result = mkhssp_from_sequence.delay('sequence', 'hssp_hssp')
         result.get()
 
     @patch('os.path.exists', return_value=False)
     @raises(RuntimeError)
     def test_get_dssp_file_not_found(self, mock_exists):
-        from xssp_rest.tasks import get_dssp
+        from xssp_api.tasks import get_dssp
         get_dssp('1crn')
         mock_exists.assert_called_once_with('/dssp/1crn.dssp')
 
-    @patch('xssp_rest.tasks.open', mock_open(read_data='data'), create=True)
+    @patch('xssp_api.tasks.open', mock_open(read_data='data'), create=True)
     @patch('os.path.exists', return_value=True)
     def test_get_dssp(self, mock_exists):
-        from xssp_rest.tasks import get_dssp
+        from xssp_api.tasks import get_dssp
         content = get_dssp('1crn')
         eq_(content, 'data')
         mock_exists.assert_called_once_with('/dssp/1crn.dssp')
 
-    @patch('xssp_rest.tasks.open', mock_open(read_data='data'), create=True)
+    @patch('xssp_api.tasks.open', mock_open(read_data='data'), create=True)
     @patch('os.path.exists', return_value=True)
     def test_get_dssp_upper(self, mock_exists):
-        from xssp_rest.tasks import get_dssp
+        from xssp_api.tasks import get_dssp
         content = get_dssp('1CRN')
         eq_(content, 'data')
         mock_exists.assert_called_once_with('/dssp/1crn.dssp')
@@ -220,22 +220,22 @@ class TestTasks(object):
     @patch('os.path.exists', return_value=False)
     @raises(RuntimeError)
     def test_get_dssp_redo_file_not_found(self, mock_exists):
-        from xssp_rest.tasks import get_dssp_redo
+        from xssp_api.tasks import get_dssp_redo
         get_dssp_redo('1crn')
         mock_exists.assert_called_once_with('/dssp_redo/1crn.dssp')
 
-    @patch('xssp_rest.tasks.open', mock_open(read_data='data'), create=True)
+    @patch('xssp_api.tasks.open', mock_open(read_data='data'), create=True)
     @patch('os.path.exists', return_value=True)
     def test_get_dssp_redo(self, mock_exists):
-        from xssp_rest.tasks import get_dssp_redo
+        from xssp_api.tasks import get_dssp_redo
         content = get_dssp_redo('1crn')
         eq_(content, 'data')
         mock_exists.assert_called_once_with('/dssp_redo/1crn.dssp')
 
-    @patch('xssp_rest.tasks.open', mock_open(read_data='data'), create=True)
+    @patch('xssp_api.tasks.open', mock_open(read_data='data'), create=True)
     @patch('os.path.exists', return_value=True)
     def test_get_dssp_redo_upper(self, mock_exists):
-        from xssp_rest.tasks import get_dssp_redo
+        from xssp_api.tasks import get_dssp_redo
         content = get_dssp_redo('1CRN')
         eq_(content, 'data')
         mock_exists.assert_called_once_with('/dssp_redo/1crn.dssp')
@@ -246,7 +246,7 @@ class TestTasks(object):
         instance = mock_bz2file.return_value
         instance.__enter__.return_value.read.return_value = 'data'
 
-        from xssp_rest.tasks import get_hssp
+        from xssp_api.tasks import get_hssp
         content = get_hssp('1crn', 'hssp_hssp')
 
         eq_(content, 'data')
@@ -258,7 +258,7 @@ class TestTasks(object):
         instance = mock_bz2file.return_value
         instance.__enter__.return_value.read.return_value = 'data'
 
-        from xssp_rest.tasks import get_hssp
+        from xssp_api.tasks import get_hssp
         content = get_hssp('1CRN', 'hssp_hssp')
 
         eq_(content, 'data')
@@ -270,7 +270,7 @@ class TestTasks(object):
         instance = mock_bz2file.return_value
         instance.__enter__.return_value.read.return_value = 'data'
 
-        from xssp_rest.tasks import get_hssp
+        from xssp_api.tasks import get_hssp
         content = get_hssp('1crn', 'hssp_stockholm')
 
         eq_(content, 'data')
@@ -282,7 +282,7 @@ class TestTasks(object):
         instance = mock_bz2file.return_value
         instance.__enter__.return_value.read.return_value = 'data'
 
-        from xssp_rest.tasks import get_hg_hssp
+        from xssp_api.tasks import get_hg_hssp
         content = get_hg_hssp('TTCCPSIVARSNFNVCRLPGTPEAICATYTGCIIIPGATCPGDYAN')
 
         eq_(content, 'data')
@@ -292,22 +292,22 @@ class TestTasks(object):
     @patch('os.path.exists', return_value=False)
     @raises(RuntimeError)
     def test_get_hg_hssp_file_not_found(self, mock_exists):
-        from xssp_rest.tasks import get_hg_hssp
+        from xssp_api.tasks import get_hg_hssp
         get_hg_hssp('TTCCPSIVARSNFNVCRLPGTPEAICATYTGCIIIPGATCPGDYAN')
 
     @raises(ValueError)
     def test_get_hssp_unexpected_output_type(self):
-        from xssp_rest.tasks import get_hssp
+        from xssp_api.tasks import get_hssp
         get_hssp('1crn', 'unexpected')
 
     @patch('os.path.exists', return_value=False)
     @raises(RuntimeError)
     def test_get_hssp_file_not_found(self, mock_exists):
-        from xssp_rest.tasks import get_hssp
+        from xssp_api.tasks import get_hssp
         get_hssp('1crn', 'hssp_hssp')
 
     def test_get_task(self):
-        from xssp_rest.tasks import get_task
+        from xssp_api.tasks import get_task
 
         task = get_task('pdb_id', 'dssp')
         eq_(task.__name__, 'get_dssp')
@@ -335,20 +335,20 @@ class TestTasks(object):
 
     @raises(ValueError)
     def test_get_task_invalid_combination_pdb_redo_id_hssp(self):
-        from xssp_rest.tasks import get_task
+        from xssp_api.tasks import get_task
         get_task('pdb_redo_id', 'hssp')
 
     @raises(ValueError)
     def test_get_task_invalid_combination_pdb_redo_id_hssp_stockholm(self):
-        from xssp_rest.tasks import get_task
+        from xssp_api.tasks import get_task
         get_task('sequence', 'dssp')
 
     @raises(ValueError)
     def test_get_task_invalid_combination_sequence_dssp(self):
-        from xssp_rest.tasks import get_task
+        from xssp_api.tasks import get_task
         get_task('pdb_redo_id', 'hssp_stockholm')
 
     @raises(ValueError)
     def test_get_task_unexpected_input_type(self):
-        from xssp_rest.tasks import get_task
+        from xssp_api.tasks import get_task
         get_task('unexpected', 'hssp_stockholm')

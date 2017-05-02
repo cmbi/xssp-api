@@ -57,7 +57,7 @@ class PdbIdStrategy(object):
         self.pdb_id = pdb_id
 
     def __call__(self):
-        from xssp_rest.tasks import get_task
+        from xssp_api.tasks import get_task
         task = get_task('pdb_id', self.output_format)
         _log.debug("Calling task '{}'".format(task.__name__))
 
@@ -74,7 +74,7 @@ class PdbRedoIdStrategy(object):
         self.pdb_redo_id = pdb_redo_id
 
     def __call__(self):
-        from xssp_rest.tasks import get_task
+        from xssp_api.tasks import get_task
         task = get_task('pdb_redo_id', self.output_format)
         _log.debug("Calling task '{}'".format(task.__name__))
 
@@ -89,7 +89,7 @@ class SequenceStrategy(object):
         self.sequence = sequence
 
     def __call__(self):
-        from xssp_rest.tasks import get_task
+        from xssp_api.tasks import get_task
         task = get_task('sequence', self.output_format)
         _log.debug("Calling task '{}'".format(task.__name__))
 
@@ -106,7 +106,7 @@ class PdbContentStrategy(object):
         self.pdb_file_path = pdb_file_path
 
     def __call__(self):
-        from xssp_rest.tasks import get_task
+        from xssp_api.tasks import get_task
         task = get_task('pdb_file', self.output_format)
         _log.debug("Calling task '{}'".format(task.__name__))
 
