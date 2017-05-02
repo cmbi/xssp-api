@@ -15,11 +15,11 @@ def create_app(settings=None):
 
     app = Flask(__name__, static_folder='frontend/static',
                 template_folder='frontend/templates')
-    app.config.from_object('xssp_rest.default_settings')
+    app.config.from_object('xssp_api.default_settings')
     if settings:
         app.config.update(settings)
     else:  # pragma: no cover
-        app.config.from_envvar('XSSP_REST_SETTINGS')  # pragma: no cover
+        app.config.from_envvar('XSSP_API_SETTINGS')  # pragma: no cover
 
     # Set the maximum content length to 200MB. This is to allow large PDB files
     # to be sent in post requests. The largest mmCIF file found to date is
@@ -36,7 +36,7 @@ def create_app(settings=None):
     # It is somewhat dubious to get _log from the root package, but I can't see
     # a better way. Having the email handler configured at the root means all
     # child loggers inherit it.
-    from xssp_rest import _log as xssp_logger
+    from xssp_api import _log as xssp_logger
 
     # Only log to email during production.
     if not app.debug and not app.testing:  # pragma: no cover
@@ -44,7 +44,7 @@ def create_app(settings=None):
                                    app.config["MAIL_SMTP_PORT"]),
                                    app.config["MAIL_FROM"],
                                    app.config["MAIL_TO"],
-                                   "xssp-rest failed")
+                                   "xssp-api failed")
         mail_handler.setLevel(logging.ERROR)
         xssp_logger.addHandler(mail_handler)
         mail_handler.setFormatter(
@@ -94,20 +94,20 @@ def create_app(settings=None):
             os.remove(test_filename)
 
     # Use ProxyFix to correct URL's when redirecting.
-    from xssp_rest.middleware import ReverseProxied
+    from xssp_api.middleware import ReverseProxied
     app.wsgi_app = ReverseProxied(app.wsgi_app)
 
     # Initialise extensions
-    from xssp_rest import toolbar
+    from xssp_api import toolbar
     toolbar.init_app(app)
 
     # Register jinja2 filters
-    from xssp_rest.frontend.filters import beautify_docstring
+    from xssp_api.frontend.filters import beautify_docstring
     app.jinja_env.filters['beautify_docstring'] = beautify_docstring
 
     # Register blueprints
-    from xssp_rest.frontend.api.endpoints import bp as api_bp
-    from xssp_rest.frontend.dashboard.views import bp as dashboard_bp
+    from xssp_api.frontend.api.endpoints import bp as api_bp
+    from xssp_api.frontend.dashboard.views import bp as dashboard_bp
     app.register_blueprint(api_bp)
     app.register_blueprint(dashboard_bp)
 
@@ -134,6 +134,6 @@ def create_celery_app(app):  # pragma: no cover
 
     celery.Task = ContextTask
 
-    import xssp_rest.tasks
+    import xssp_api.tasks
 
     return celery

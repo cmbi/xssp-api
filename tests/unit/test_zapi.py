@@ -6,7 +6,7 @@ from StringIO import StringIO
 from mock import patch
 from nose.tools import eq_, ok_, raises
 
-from xssp_rest.factory import create_app
+from xssp_api.factory import create_app
 
 
 class TestEndpoints(object):
@@ -20,7 +20,7 @@ class TestEndpoints(object):
                                     'WTF_CSRF_ENABLED': True})
         cls.app = cls.flask_app.test_client()
 
-    @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
+    @patch('xssp_api.services.xssp.PdbContentStrategy.__call__')
     def test_create_xssp_pdb_file_dssp(self, mock_call):
         mock_call.return_value = 12345
         rv = self.app.post('/api/create/pdb_file/dssp/',
@@ -36,7 +36,7 @@ class TestEndpoints(object):
         rv = self.app.post('/api/create/pdb_file/dssp/')
         eq_(rv.status_code, 400)
 
-    @patch('xssp_rest.services.xssp.PdbContentStrategy.__call__')
+    @patch('xssp_api.services.xssp.PdbContentStrategy.__call__')
     def test_create_xssp_pdb_file_hssp(self, mock_call):
         mock_call.return_value = 12345
         rv = self.app.post('/api/create/pdb_file/hssp_hssp/',
@@ -53,7 +53,7 @@ class TestEndpoints(object):
         rv = self.app.post('/api/create/pdb_file/hssp/')
         eq_(rv.status_code, 400)
 
-    @patch('xssp_rest.services.xssp.SequenceStrategy.__call__')
+    @patch('xssp_api.services.xssp.SequenceStrategy.__call__')
     def test_create_xssp_sequence_hssp(self, mock_call):
         mock_call.return_value = 12345
         rv = self.app.post('/api/create/sequence/hssp_hssp/',
@@ -68,7 +68,7 @@ class TestEndpoints(object):
         rv = self.app.post('/api/create/sequence/hssp_hssp/')
         eq_(rv.status_code, 400)
 
-    @patch('xssp_rest.tasks.mkdssp_from_pdb.AsyncResult')
+    @patch('xssp_api.tasks.mkdssp_from_pdb.AsyncResult')
     def test_get_xssp_status_pdb_file_dssp(self, mock_result):
         mock_result.return_value.failed.return_value = False
         mock_result.return_value.status = 'SUCCESS'
@@ -78,7 +78,7 @@ class TestEndpoints(object):
         ok_('status' in response)
         eq_(response['status'], 'SUCCESS')
 
-    @patch('xssp_rest.tasks.mkhssp_from_pdb.AsyncResult')
+    @patch('xssp_api.tasks.mkhssp_from_pdb.AsyncResult')
     def test_get_xssp_status_pdb_file_hssp(self, mock_result):
         mock_result.return_value.failed.return_value = False
         mock_result.return_value.status = 'SUCCESS'
@@ -88,7 +88,7 @@ class TestEndpoints(object):
         ok_('status' in response)
         eq_(response['status'], 'SUCCESS')
 
-    @patch('xssp_rest.tasks.mkhssp_from_sequence.AsyncResult')
+    @patch('xssp_api.tasks.mkhssp_from_sequence.AsyncResult')
     def test_get_xssp_status_sequence_hssp(self, mock_result):
         mock_result.return_value.failed.return_value = False
         mock_result.return_value.status = 'SUCCESS'
@@ -98,7 +98,7 @@ class TestEndpoints(object):
         ok_('status' in response)
         eq_(response['status'], 'SUCCESS')
 
-    @patch('xssp_rest.tasks.mkhssp_from_sequence.AsyncResult')
+    @patch('xssp_api.tasks.mkhssp_from_sequence.AsyncResult')
     def test_get_xssp_status_sequence_hssp_failed_message(self, mock_result):
         mock_result.return_value.failed.return_value = True
         mock_result.return_value.status = 'FAILED'
@@ -121,7 +121,7 @@ class TestEndpoints(object):
         rv = self.app.get('/api/status/sequence/unknown/12345/')
         eq_(rv.status_code, 400)
 
-    @patch('xssp_rest.tasks.mkdssp_from_pdb.AsyncResult')
+    @patch('xssp_api.tasks.mkdssp_from_pdb.AsyncResult')
     def test_get_xssp_result_pdb_file_dssp(self, mock_result):
         mock_result.return_value.get.return_value = 'content-of-result'
         rv = self.app.get('/api/result/pdb_file/dssp/12345/')
@@ -130,7 +130,7 @@ class TestEndpoints(object):
         ok_('result' in response)
         eq_(response['result'], 'content-of-result')
 
-    @patch('xssp_rest.tasks.mkhssp_from_pdb.AsyncResult')
+    @patch('xssp_api.tasks.mkhssp_from_pdb.AsyncResult')
     def test_get_xssp_result_pdb_file_hssp(self, mock_result):
         mock_result.return_value.get.return_value = 'content-of-result'
         rv = self.app.get('/api/result/pdb_file/hssp_hssp/12345/')
@@ -139,7 +139,7 @@ class TestEndpoints(object):
         ok_('result' in response)
         eq_(response['result'], 'content-of-result')
 
-    @patch('xssp_rest.tasks.mkhssp_from_sequence.AsyncResult')
+    @patch('xssp_api.tasks.mkhssp_from_sequence.AsyncResult')
     def test_get_xssp_result_sequence_hssp(self, mock_result):
         mock_result.return_value.get.return_value = 'content-of-result'
         rv = self.app.get('/api/result/sequence/hssp_hssp/12345/')
@@ -159,7 +159,7 @@ class TestEndpoints(object):
         eq_(rv.status_code, 400)
 
     def test_api_doc(self):
-        from xssp_rest.frontend.api import endpoints
+        from xssp_api.frontend.api import endpoints
 
         rv = self.app.get('/api/')
         eq_(rv.status_code, 200)
@@ -167,7 +167,7 @@ class TestEndpoints(object):
         excluded_fs = ['api_doc', 'api_examples']
         for f_name, f in inspect.getmembers(endpoints, inspect.isfunction):
             mod_name = inspect.getmodule(f).__name__
-            if "xssp_rest.frontend.api.endpoints" in mod_name and \
+            if "xssp_api.frontend.api.endpoints" in mod_name and \
                f_name not in excluded_fs:
                 src = inspect.getsourcelines(f)
                 rx = r"@bp\.route\('([\w\/<>]*)', methods=\['([A-Z]*)']\)"

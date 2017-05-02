@@ -4,7 +4,7 @@ from flask_wtf import Form
 from wtforms.fields import FileField, SelectField, TextAreaField, TextField
 from wtforms.validators import Regexp
 
-from xssp_rest.frontend.validators import (FileExtension, NAminoAcids,
+from xssp_api.frontend.validators import (FileExtension, NAminoAcids,
                                            NotRequiredIfOneOf)
 
 

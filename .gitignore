@@ -49,10 +49,10 @@ Session.vim
 celerybeat-schedule
 
 # bower
-xssp_rest/frontend/static/libs
+xssp_api/frontend/static/libs
 
 # vagrant
 .vagrant/
 
-# xssp-rest
+# xssp-api
 uploads/

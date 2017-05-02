@@ -3,9 +3,9 @@ import logging
 from flask import (Blueprint, current_app as app, g, redirect, render_template,
                    request, url_for)
 
-from xssp_rest import get_version
-from xssp_rest.frontend.dashboard.forms import XsspForm
-from xssp_rest.services.xssp import process_request
+from xssp_api import get_version
+from xssp_api.frontend.dashboard.forms import XsspForm
+from xssp_api.services.xssp import process_request
 
 _log = logging.getLogger(__name__)
 

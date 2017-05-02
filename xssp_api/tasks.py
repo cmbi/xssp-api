@@ -12,7 +12,7 @@ from celery import current_app as celery_app
 from celery.signals import setup_logging
 from flask import current_app as flask_app
 
-from xssp_rest.frontend.validators import RE_FASTA_DESCRIPTION
+from xssp_api.frontend.validators import RE_FASTA_DESCRIPTION
 
 
 _log = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ def mkdssp_from_pdb(self, pdb_file_path):
     except subprocess.CalledProcessError as e:
         _log.error("Error: {}".format(e.output))
         # Copy the file so developers can access the pdb content to
-        # reproduce the error. The renamed file is never deleted by xssp-rest.
+        # reproduce the error. The renamed file is never deleted by xssp-api.
         head, tail = os.path.split(pdb_file_path)
         error_pdb_path = os.path.join(head,
                                       '{}_{}'.format(self.request.id, tail))
@@ -72,7 +72,7 @@ def mkhssp_from_pdb(self, pdb_file_path, output_format):
     except subprocess.CalledProcessError as e:
         _log.error("Error: {}".format(e.output))
         # Copy the file so developers can access the pdb content to
-        # reproduce the error. The renamed file is never deleted by xssp-rest.
+        # reproduce the error. The renamed file is never deleted by xssp-api.
         head, tail = os.path.split(pdb_file_path)
         error_pdb_path = os.path.join(head,
                                       '{}_{}'.format(self.request.id, tail))
@@ -96,7 +96,7 @@ def mkhssp_from_sequence(sequence, output_format):
     """
     # The temporary file name must end in .fasta, otherwise mkhssp assumes it's
     # a PDB file.
-    tmp_file = tempfile.NamedTemporaryFile(prefix='hssp_rest_tmp',
+    tmp_file = tempfile.NamedTemporaryFile(prefix='hssp_api_tmp',
                                            suffix='.fasta',
                                            delete=False)
     _log.debug("Created tmp file '{}'".format(tmp_file.name))
@@ -266,7 +266,7 @@ def get_task(input_type, output_type):
 def _stockholm_to_hssp(stockholm_data):
     _log.info("Converting stockholm to hssp")
 
-    tmp_file = tempfile.NamedTemporaryFile(prefix='hssp_rest_tmp',
+    tmp_file = tempfile.NamedTemporaryFile(prefix='hssp_api_tmp',
                                            delete=False)
     _log.debug("Created tmp file '{}'".format(tmp_file.name))
 

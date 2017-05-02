@@ -25,7 +25,7 @@ MAX_POLLS = 24
 
 
 class TestApi(object):
-    """Integration tests fot the XSSP-REST API."""
+    """Integration tests fot the XSSP-API."""
 
     def setup(self):
         self.all_dssp = self._get_present_ids_from_why_not('DSSP_PRESENT')
@@ -40,7 +40,7 @@ class TestApi(object):
         return filter(None, r.text.split('\n'))
 
     def _test_input_ids(self, input_type, output_types, test_ids):
-        """Driver for testing retrieval of existing files using XSSP-REST."""
+        """Driver for testing retrieval of existing files using XSSP-API."""
         for pdb_id in test_ids:
             _log.info('Testing {} {}...'.format(input_type, pdb_id))
             for output_type in output_types:

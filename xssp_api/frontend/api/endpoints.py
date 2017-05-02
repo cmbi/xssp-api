@@ -5,8 +5,8 @@ import re
 from flask import Blueprint, current_app as app, render_template, request
 from flask.json import jsonify
 
-from xssp_rest.frontend.dashboard.forms import XsspForm
-from xssp_rest.services.xssp import process_request
+from xssp_api.frontend.dashboard.forms import XsspForm
+from xssp_api.services.xssp import process_request
 
 
 _log = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ def get_xssp_status(input_type, output_type, id):
     :param id: The id returned by a call to the create method.
     :return: Either PENDING, STARTED, SUCCESS, FAILURE, RETRY, or REVOKED.
     """
-    from xssp_rest.tasks import get_task
+    from xssp_api.tasks import get_task
     task = get_task(input_type, output_type)
     async_result = task.AsyncResult(id)
 
@@ -77,7 +77,7 @@ def get_xssp_result(input_type, output_type, id):
     :return: The output of the job. If the job status is not SUCCESS, this
              method returns an error.
     """
-    from xssp_rest.tasks import get_task
+    from xssp_api.tasks import get_task
     task = get_task(input_type, output_type)
     _log.debug("task is {}".format(task.__name__))
     response = {'result': task.AsyncResult(id).get()}
