@@ -2,12 +2,12 @@ import inspect
 import logging
 import re
 
-from flask import Blueprint, current_app as app, render_template, request
+from flask import g, Blueprint, current_app as app, render_template, request
 from flask.json import jsonify
 
 from xssp_api.frontend.dashboard.forms import XsspForm
 from xssp_api.services.xssp import process_request
-
+from xssp_api import get_version
 
 _log = logging.getLogger(__name__)
 
@@ -110,3 +110,7 @@ def api_doc():
 @bp.route('/examples', methods=['GET'])
 def api_examples():
     return render_template('api/examples.html')  # pragma: no cover
+
+@bp.before_request
+def before_request():
+    g.xssp_version = get_version()
