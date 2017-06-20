@@ -40,6 +40,10 @@ def create_xssp(input_type, output_type):
                                     form.pdb_id.data, request.files,
                                     form.sequence.data)
 
+        storage.insert('tasks', {'task_id': celery_id,
+                                 'input_type': input_type,
+                                 'output_type': output_type})
+
         return jsonify({'id': celery_id}), 202
     return jsonify(form.errors), 400
 
@@ -115,5 +119,19 @@ def api_examples():
 @bp.route('/queued/', methods=['GET'])
 def get_queued():
     res = storage.find('tasks', {})
-    task_ids = map(lambda t: t['task_id'], res)
-    return jsonify({ 'tasks': task_ids })
+
+    from xssp_api.tasks import get_task
+
+    tasks = []
+    for t in res:
+        task = get_task(t['input_type'], t['output_type'])
+        async_result = task.AsyncResult(t['task_id'])
+
+        tasks.append({'task_id': t['task_id'],
+                      'input_type': t['input_type'],
+                      'output_type': t['output_type'],
+                      'status': async_result.status})
+
+    return jsonify({ 'tasks': tasks })
+
+

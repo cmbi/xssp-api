@@ -13,19 +13,8 @@ from celery.signals import setup_logging, task_prerun
 from flask import current_app as flask_app
 
 from xssp_api.frontend.validators import RE_FASTA_DESCRIPTION
-from xssp_api.storage import storage
 
 _log = logging.getLogger(__name__)
-
-
-@task_prerun.connect
-def task_prerun_handler(task_id, task, *args, **kwargs):
-    task_object = {'task_id': task_id}
-
-    _log.debug('task object is {}'.format(task_object))
-
-    # Put the task id in the database so the status can be retrieved later
-    storage.insert('tasks', task_object)
 
 
 @setup_logging.connect
