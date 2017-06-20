@@ -7,7 +7,7 @@ from flask.json import jsonify
 
 from xssp_api.frontend.dashboard.forms import XsspForm
 from xssp_api.services.xssp import process_request
-
+from xssp_api.storage import storage
 
 _log = logging.getLogger(__name__)
 
@@ -110,3 +110,10 @@ def api_doc():
 @bp.route('/examples', methods=['GET'])
 def api_examples():
     return render_template('api/examples.html')  # pragma: no cover
+
+
+@bp.route('/queued/', methods=['GET'])
+def get_queued():
+    res = storage.find('tasks', {})
+    task_ids = map(lambda t: t['task_id'], res)
+    return jsonify({ 'tasks': task_ids })
