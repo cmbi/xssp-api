@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th class="col-sm-2">Task ID</th>
+      <th class="col-sm-4">Input Type</th>
+      <th class="col-sm-4">Output Type</th>
+      <th class="col-sm-2">Status</th>
+    </tr>
+  </thead>
+  <tbody id="queue">
+  </tbody>
+</table>
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+  var intervalId = setInterval(update_queue, 1000);
+
+  function update_queue() {
+    $.getJSON(
+      "{{ url_for('xssp.get_queued') }}",
+      function(data) {
+        $("#queue").empty();
+        for (var i = 0; i < data.tasks.length; i++) {
+
+          var task = data.tasks[i];
+          $("#queue").append("<tr><td>" + task.task_id + "</td>" +
+                             "<td>" + task.input_type + "</td>" +
+                             "<td>" + task.output_type + "</td>" +
+                             "<td>" + task.status + "</td></tr>");
+        }
+      }
+    );
+  }
+</script>
+{% endblock %}
