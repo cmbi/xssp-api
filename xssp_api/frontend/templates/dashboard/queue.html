@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<table class="table table-bordered">
+<table class="table table-bordered table-hover">
   <thead>
     <tr>
       <th class="col-sm-2">Task ID</th>
-      <th class="col-sm-4">Input Type</th>
-      <th class="col-sm-4">Output Type</th>
-      <th class="col-sm-2">Status</th>
+      <th class="col-sm-1">Input Type</th>
+      <th class="col-sm-1">Output Type</th>
+      <th class="col-sm-1">Status</th>
+      <th class="col-sm-1"></th>
     </tr>
   </thead>
   <tbody id="queue">
@@ -25,12 +26,19 @@
       function(data) {
         $("#queue").empty();
         for (var i = 0; i < data.tasks.length; i++) {
-
           var task = data.tasks[i];
-          $("#queue").append("<tr><td>" + task.task_id + "</td>" +
+          var output_url = "{{ url_for('dashboard.output', input_type='input_type', output_type='output_type', celery_id='celery_id') }}";
+          output_url = output_url.replace('input_type', task.input_type)
+                                 .replace('output_type', task.output_type)
+                                 .replace('celery_id', task.task_id);
+
+          $("#queue").append("<a href=\"" + output_url + "\">" +
+                             "<tr><td>" + task.task_id + "</td>" +
                              "<td>" + task.input_type + "</td>" +
                              "<td>" + task.output_type + "</td>" +
-                             "<td>" + task.status + "</td></tr>");
+                             "<td>" + task.status + "</td>" +
+                             "<td><a href=\"" + output_url + "\">" + 
+                             "<span class=\"glyphicon glyphicon-circle-arrow-right\"></span></a></td></tr>");
         }
       }
     );
