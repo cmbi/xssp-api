@@ -23,3 +23,7 @@ DSSP_REDO_ROOT = '/mnt/cmbi4/dssp_redo/'
 HSSP_ROOT = '/mnt/cmbi4/hssp/'
 HG_HSSP_ROOT = '/mnt/cmbi4/hg-hssp'
 HSSP_STO_ROOT = '/mnt/cmbi4/hssp3/'
+
+# Database
+MONGODB_URI = 'mongodb://xsspapi_mongo_1'
+MONGODB_DB_NAME = 'xsspapi'

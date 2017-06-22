@@ -38,6 +38,11 @@ def output(input_type, output_type, celery_id):
                            celery_id=celery_id)
 
 
+@bp.route("/queue/", methods=['GET'])
+def queue():
+    return render_template("dashboard/queue.html")
+
+
 @bp.errorhandler(Exception)
 def exception_error_handler(error):  # pragma: no cover
     _log.error("Unhandled exception: {}".format(error))

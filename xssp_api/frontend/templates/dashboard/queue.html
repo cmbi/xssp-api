@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="panel panel-default">
+  <table class="table table-bordered table-hover">
+    <thead>
+      <tr>
+        <th class="col-sm-2">Task ID</th>
+        <th class="col-sm-1">Input Type</th>
+        <th class="col-sm-1">Output Type</th>
+        <th class="col-sm-1">Status</th>
+        <th class="col-sm-1"></th>
+      </tr>
+    </thead>
+    <tbody id="queue">
+    </tbody>
+  </table>
+  <div class="panel-footer">
+    <ul class="pagination" id="pagination-footer">
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script type="text/javascript">
+  var intervalId = setInterval(update_queue, 1000);
+
+  var task_queue = [];
+  var pagination_index = 0,
+      max_per_page = 10,
+      max_buttons = 3;
+
+  function pagination_goto(index) {
+    pagination_index = index;
+    adjust_pagination();
+  }
+
+  function adjust_pagination() {
+    $("#queue").empty();
+    $("#pagination-footer").empty();
+
+    // Fill up the page:
+    for (var i = pagination_index * max_per_page;
+         i < task_queue.length && i < ((pagination_index + 1) * max_per_page);
+         i++) {
+      var task = task_queue[i];
+      var output_url = "{{ url_for('dashboard.output', input_type='input_type', output_type='output_type', celery_id='celery_id') }}";
+      output_url = output_url.replace('input_type', task.input_type)
+                             .replace('output_type', task.output_type)
+                             .replace('celery_id', task.task_id);
+
+      $("#queue").append("<a href=\"" + output_url + "\">" +
+                         "<tr><td>" + task.task_id + "</td>" +
+                         "<td>" + task.input_type + "</td>" +
+                         "<td>" + task.output_type + "</td>" +
+                         "<td>" + task.status + "</td>" +
+                         "<td><a href=\"" + output_url + "\">" +
+                         "<span class=\"glyphicon glyphicon-circle-arrow-right\"></span></a></td></tr>");
+    }
+
+    // Fill up the pagination footer with links:
+    if (pagination_index > 0)
+      $("#pagination-footer").append("<li class=\"previous\"><a onclick=\"pagination_goto(0);\">&lt;&lt;</a></li>");
+    else
+      $("#pagination-footer").append("<li class=\"previous disabled unavailable\"><a>&lt;&lt;</a></li>");
+
+    for (var i = 0; i < task_queue.length; i += max_per_page) {
+      var n = i / max_per_page;
+
+      if (n >= max_buttons) {
+        // Too many pages, skip to the end:
+        $("#pagination-footer").append("<li class=\"disabled unavailable\"><a>...</a></li>")
+        i = task_queue.length - max_buttons * max_per_page;
+        continue;
+      }
+
+      if (pagination_index != n)
+        $("#pagination-footer").append("<li><a onclick=\"pagination_goto(" + n + ");\">" + (n + 1) + "</a></li>")
+      else
+        $("#pagination-footer").append("<li class=\"active\"><a>" + (n + 1) + "</a></li>")
+    }
+
+    var last_page_index = Math.ceil(task_queue.length / max_per_page) - 1;
+    if (pagination_index < last_page_index)
+      $("#pagination-footer").append("<li class=\"next\"><a onclick=\"pagination_goto(" + last_page_index + ");\">&gt;&gt;</a></li>");
+    else
+      $("#pagination-footer").append("<li class=\"next disabled unavailable\"><a>&gt;&gt;</a></li>");
+  }
+
+  function update_queue() {
+    $.getJSON(
+      "{{ url_for('xssp.get_queued') }}",
+      function(data) {
+        task_queue = data.tasks;
+
+        adjust_pagination();
+      }
+    );
+  }
+</script>
+{% endblock %}

@@ -7,6 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile-frontend
     depends_on:
+      - mongo
       - redis
       - celery
     command: gunicorn -k gevent -b 0.0.0.0:5002 xssp_api.application:app
@@ -22,6 +23,7 @@ services:
       context: .
       dockerfile: Dockerfile-celery
     depends_on:
+      - mongo
       - rabbitmq
       - redis
     command: celery -A xssp_api.application:celery worker -B -n xssp.%n
@@ -37,6 +39,9 @@ services:
 
   rabbitmq:
     image: rabbitmq
+
+  mongo:
+    image: mongo
 
   data:
     image: tianon/true
