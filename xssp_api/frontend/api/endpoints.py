@@ -2,12 +2,13 @@ import inspect
 import logging
 import re
 
-from flask import Blueprint, current_app as app, render_template, request
+from flask import g, Blueprint, current_app as app, render_template, request
 from flask.json import jsonify
 
 from xssp_api.frontend.dashboard.forms import XsspForm
 from xssp_api.services.xssp import process_request
-
+from xssp_api.storage import storage
+from xssp_api import get_version
 
 _log = logging.getLogger(__name__)
 
@@ -39,6 +40,10 @@ def create_xssp(input_type, output_type):
         celery_id = process_request(form.input_type.data, form.output_type.data,
                                     form.pdb_id.data, request.files,
                                     form.sequence.data)
+
+        storage.insert('tasks', {'task_id': celery_id,
+                                 'input_type': input_type,
+                                 'output_type': output_type})
 
         return jsonify({'id': celery_id}), 202
     return jsonify(form.errors), 400
@@ -110,3 +115,28 @@ def api_doc():
 @bp.route('/examples', methods=['GET'])
 def api_examples():
     return render_template('api/examples.html')  # pragma: no cover
+  
+
+@bp.route('/queued/', methods=['GET'])
+def get_queued():
+    res = storage.find('tasks', {})
+
+    from xssp_api.tasks import get_task
+
+    tasks = []
+    for t in res:
+        task = get_task(t['input_type'], t['output_type'])
+        async_result = task.AsyncResult(t['task_id'])
+
+        tasks.append({'task_id': t['task_id'],
+                      'input_type': t['input_type'],
+                      'output_type': t['output_type'],
+                      'status': async_result.status})
+
+    return jsonify({ 'tasks': tasks })
+
+
+@bp.before_request
+def before_request():
+    g.xssp_version = get_version()
+

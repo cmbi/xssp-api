@@ -9,11 +9,10 @@ import textwrap
 import uuid
 
 from celery import current_app as celery_app
-from celery.signals import setup_logging
+from celery.signals import setup_logging, task_prerun
 from flask import current_app as flask_app
 
 from xssp_api.frontend.validators import RE_FASTA_DESCRIPTION
-
 
 _log = logging.getLogger(__name__)
 

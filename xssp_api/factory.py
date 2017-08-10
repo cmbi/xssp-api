@@ -119,6 +119,12 @@ def create_app(settings=None):
     app.register_blueprint(api_bp)
     app.register_blueprint(dashboard_bp)
 
+    # Database
+    from xssp_api.storage import storage
+    storage.uri = app.config['MONGODB_URI']
+    storage.db_name = app.config['MONGODB_DB_NAME']
+    storage.connect()
+
     return app
 
 
