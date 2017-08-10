@@ -14,6 +14,9 @@ services:
       - "5002:5002"
     environment:
       - XSSP_API_SETTINGS=/usr/src/app/prd_settings.py
+      - LOG_FILENAME=/var/log/xssp_api/xssp_web.log
+    volumes:
+      - "/var/log/xssp_api:/var/log/xssp_api"
     volumes_from:
       - data
 
@@ -27,8 +30,10 @@ services:
     command: celery -A xssp_api.application:celery worker -B -n xssp.%n
     environment:
       - XSSP_API_SETTINGS=/usr/src/app/prd_settings.py
+      - LOG_FILENAME=/var/log/xssp_api/xssp_celery.log
     volumes:
-      - "/mnt/cmbi4:/mnt/cmbi4"
+      - "/var/log/xssp_api:/var/log/xssp_api"
+      - "/srv/data:/mnt/cmbi4"
     volumes_from:
       - data
 
