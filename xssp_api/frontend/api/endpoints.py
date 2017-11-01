@@ -85,8 +85,12 @@ def get_xssp_result(input_type, output_type, id):
     from xssp_api.tasks import get_task
     task = get_task(input_type, output_type)
     _log.debug("task is {}".format(task.__name__))
-    response = {'result': task.AsyncResult(id).get()}
+    result = task.AsyncResult(id).get()
 
+    if len(result) <= 0:
+        return jsonify({'error': 'empty result'}), 500
+    
+    response = {'result': result}
     return jsonify(response)
 
 
