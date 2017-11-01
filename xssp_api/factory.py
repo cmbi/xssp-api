@@ -1,13 +1,15 @@
 import logging
 import os
 import sys
-from logging.handlers import SMTPHandler
+from logging.handlers import SMTPHandler, RotatingFileHandler
 
 from celery import Celery
 from flask import Flask
 
 
 _log = logging.getLogger(__name__)
+sh = logging.StreamHandler()
+file_handler = RotatingFileHandler(os.environ["LOG_FILENAME"], maxBytes=10485760)
 
 
 def create_app(settings=None):
@@ -71,6 +73,12 @@ def create_app(settings=None):
             xssp_logger.setLevel(logging.DEBUG)
         else:
             xssp_logger.setLevel(logging.INFO)
+
+            # Log to file in production as well.  Log filename is loaded from
+            # the environment, not from the settings file. maxBytes = 10MB.
+            file_handler.setLevel(logging.INFO)
+            file_handler.setFormatter(formatter)
+            xssp_logger.addHandler(file_handler)
 
     # Check if the upload folder exists and create it if it doesn't
     if not os.path.exists(app.config['UPLOAD_FOLDER']):  # pragma: no cover

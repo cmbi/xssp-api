@@ -1,6 +1,7 @@
 import inspect
 import logging
 import re
+import datetime
 
 from flask import g, Blueprint, current_app as app, render_template, request
 from flask.json import jsonify
@@ -43,7 +44,8 @@ def create_xssp(input_type, output_type):
 
         storage.insert('tasks', {'task_id': celery_id,
                                  'input_type': input_type,
-                                 'output_type': output_type})
+                                 'output_type': output_type,
+                                 'created_on': datetime.datetime.utcnow()})
 
         return jsonify({'id': celery_id}), 202
     return jsonify(form.errors), 400
@@ -85,11 +87,11 @@ def get_xssp_result(input_type, output_type, id):
     from xssp_api.tasks import get_task
     task = get_task(input_type, output_type)
     _log.debug("task is {}".format(task.__name__))
-    result = task.AsyncResult(id).get()
 
+    result = task.AsyncResult(id).get()
     if len(result) <= 0:
         return jsonify({'error': 'empty result'}), 500
-    
+
     response = {'result': result}
     return jsonify(response)
 
