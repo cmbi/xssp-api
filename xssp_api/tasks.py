@@ -7,12 +7,14 @@ import subprocess
 import tempfile
 import textwrap
 import uuid
+import datetime
 
 from celery import current_app as celery_app
 from celery.signals import setup_logging, task_prerun
 from flask import current_app as flask_app
 
 from xssp_api.frontend.validators import RE_FASTA_DESCRIPTION
+from xssp_api.storage import storage
 
 _log = logging.getLogger(__name__)
 
@@ -286,3 +288,11 @@ def _stockholm_to_hssp(stockholm_data):
     finally:
         _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
         os.remove(tmp_file.name)
+
+
+@celery_app.task
+def remove_old_tasks():
+    storage.remove('tasks', {'created_on': {'$exists': False}})
+    storage.remove('tasks', {'created_on': {
+        '$lt': datetime.datetime.utcnow() - datetime.timedelta(days=30)
+    }})

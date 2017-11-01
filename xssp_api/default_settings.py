@@ -1,3 +1,4 @@
+from celery.schedules import crontab
 from kombu import Exchange, Queue
 
 # Celery
@@ -8,6 +9,13 @@ CELERY_QUEUES = (
 )
 CELERY_RESULT_BACKEND = 'redis://xsspapi_redis_1/0'
 CELERY_TRACK_STARTED = True
+CELERYBEAT_SCHEDULE = {
+    # Every day at midnight
+    'remove_old_tasks': {
+        'task': 'xssp_api.tasks.remove_old_tasks',
+        'schedule': crontab(hour=0, minute=0),
+    },
+}
 
 # xssp
 XSSP_DATABANKS = ['/mnt/cmbi4/fasta/uniprot_sprot.fasta',
