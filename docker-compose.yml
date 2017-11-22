@@ -52,9 +52,20 @@ services:
       - LOG_FILENAME=/var/log/xssp_api/xssp_celery.log
     volumes:
       - "/var/log/xssp_api:/var/log/xssp_api"
-      - "/srv/data:/mnt/cmbi4"
+      - "/mnt/chelonium:/mnt/chelonium"
+      - "/srv/xssp:/srv"
     volumes_from:
       - data
+
+  databanks:
+    build:
+      context: .
+      dockerfile: Dockerfile-databanks
+    command: ./schedule_updates.bash
+    volumes:
+      - "/var/log/xssp_api:/var/log/xssp_api"
+      - "/mnt/chelonium:/mnt/chelonium"
+      - "/srv/xssp:/srv"
 
   redis:
     image: redis
