@@ -50,17 +50,26 @@ def create_databank(hssp_dir_path, databank_path):
                     _log.warn("skipping {}: {}".format(path, str(e)))
                     continue
 
-                id_ = os.path.basename(path).split('.')[0]
-
                 _log.debug("adding {} chains {}".format(path, sequences.keys()))
                 for chain in sequences:
-                    f.write(">%s_%s\n%s\n" % (id_, chain, sequences[chain]))
+                    f.write(">%s:%s\n%s\n" % (path, chain, sequences[chain]))
 
         subprocess.call([settings.MAKEBLASTDB, '-in', fasta_path,
                          '-dbtype', 'prot', '-out', databank_path])
     finally:
         if os.path.isfile(fasta_path):
             os.remove(fasta_path)
+
+
+class BlastAlignment(object):
+    def __init__(self, query_start, query_end, query_alignment,
+                 subj_start, subj_end, subj_alignment):
+        self.query_start = query_start
+        self.query_end = query_end
+        self.query_alignment = query_alignment
+        self.subj_start = subj_start
+        self.subj_end = subj_end
+        self.subj_alignment = subj_alignment
 
 
 def blast_databank(sequence, databank_path):
@@ -70,7 +79,7 @@ def blast_databank(sequence, databank_path):
 
     try:
         subprocess.call([settings.BLASTP, '-query', fasta_path,
-                         '-db', databank_path, '-outFmt', '5',
+                         '-db', databank_path, '-outfmt', '5',
                          '-out', result_path])
 
         root = ET.parse(result_path).getroot()

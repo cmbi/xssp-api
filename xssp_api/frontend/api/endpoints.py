@@ -121,7 +121,7 @@ def api_doc():
 @bp.route('/examples', methods=['GET'])
 def api_examples():
     return render_template('api/examples.html')  # pragma: no cover
-  
+
 
 @bp.route('/queued/', methods=['GET'])
 def get_queued():

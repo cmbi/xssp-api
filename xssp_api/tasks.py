@@ -16,6 +16,9 @@ from flask import current_app as flask_app
 from xssp_api.frontend.validators import RE_FASTA_DESCRIPTION
 from xssp_api.storage import storage
 
+from xssp_api.controllers.blast import blast_databank
+from xssp_api.domain.method import is_almost_same
+
 _log = logging.getLogger(__name__)
 
 
@@ -167,27 +170,23 @@ def get_hssp(pdb_id, output_type):
 def get_hg_hssp(sequence):
     _log.info("Getting hg-hssp data for '{}'".format(sequence))
 
-    # Calculate the uuid of the sequence.
-    # The hg-hssp filenames are uuid values generated from the sequence, with
-    # the caveat that they were produced in java using UUID.nameUUIDFromBytes,
-    # which doesn't require a namespace. The class below provides a null
-    # namespace to achieve the same result.
-    class NULL_NAMESPACE:
-        bytes = b''
-    sequence_hash = str(uuid.uuid3(NULL_NAMESPACE, sequence))
+    hits = blast_databank(sequence, celery_app.config['HG_HSSP_DATABANK'])
+    for hitID in hits:
+        path, chain = hitID.split(':')
 
-    # Determine path to hssp file and check that it exists.
-    path = os.path.join(flask_app.config['HG_HSSP_ROOT'],
-                        sequence_hash + '.sto.bz2')
+        for alignment in hits[hitID]:
+            if is_almost_same(sequence, alignment):
+                # Check that it still exists.
+                if not os.path.exists(path):
+                    continue
 
-    if not os.path.exists(path):
-        raise RuntimeError("File not found: '{}'".format(path))
+                # Unzip the file and return the contents
+                _log.info("Unzipping '{}'".format(path))
+                with bz2.BZ2File(path) as f:
+                    content = f.read()
+                return content
 
-    # Unzip the file and return the contents
-    _log.info("Unzipping '{}'".format(path))
-    with bz2.BZ2File(path) as f:
-        content = f.read()
-    return content
+    raise RuntimeError("No hits")
 
 
 @celery_app.task
