@@ -5,7 +5,7 @@ import os
 import logging
 
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO)
 
 root_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 sys.path.append(root_path)

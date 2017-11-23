@@ -22,6 +22,9 @@ def get_stockholm_sequences(path):
                     amino_acid_letter = 'C'
 
                 chain = line[20]
+                if chain =='!':
+                    continue
+
                 if chain == '>':
                     chain = line[69:73].strip()
 
@@ -38,7 +41,7 @@ def create_databank(hssp_dir_path, databank_path):
     try:
         with open(fasta_path, 'w') as f:
             for filename in os.listdir(hssp_dir_path):
-                if not filename.endswith('.hssp.bz2'):
+                if not filename.endswith('.hssp.bz2') and not filename.endswith('.sto.bz2'):
                     continue
                 path = os.path.join(hssp_dir_path, filename)
                 try:
@@ -49,7 +52,7 @@ def create_databank(hssp_dir_path, databank_path):
 
                 id_ = os.path.basename(path).split('.')[0]
 
-                _log.info("adding {}".format(path))
+                _log.debug("adding {} chains {}".format(path, sequences.keys()))
                 for chain in sequences:
                     f.write(">%s_%s\n%s\n" % (id_, chain, sequences[chain]))
 
