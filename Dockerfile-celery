@@ -5,7 +5,7 @@ RUN mkdir /deps
 RUN apt-get update ;\
     apt-get install -y make rsync wget git g++ libboost-all-dev libbz2-dev \
                        doxygen xsltproc docbook docbook-xsl docbook-xml \
-                       autoconf automake autotools-dev
+                       autoconf automake autotools-dev ncbi-blast\+
 
 # libzeep
 RUN git clone https://github.com/mhekkel/libzeep.git /deps/libzeep ;\

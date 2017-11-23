@@ -11,7 +11,6 @@ import xssp_api.default_settings as settings
 _log = logging.getLogger(__name__)
 
 def get_stockholm_sequences(path):
-
     sequences = {}
 
     with BZ2File(path, 'r') as f:
@@ -36,7 +35,6 @@ def get_stockholm_sequences(path):
 
 
 def create_databank(hssp_dir_path, databank_path):
-
     fasta_path = tempfile.mktemp()
     try:
         with open(fasta_path, 'w') as f:
@@ -73,11 +71,13 @@ class BlastAlignment(object):
 
 
 def blast_databank(sequence, databank_path):
-
     fasta_path = tempfile.mktemp()
     result_path = tempfile.mktemp()
 
     try:
+        with open(fasta_path, 'w') as f:
+            f.write('>1\n%s\n' % sequence)
+
         subprocess.call([settings.BLASTP, '-query', fasta_path,
                          '-db', databank_path, '-outfmt', '5',
                          '-out', result_path])

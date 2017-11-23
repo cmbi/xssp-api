@@ -170,11 +170,14 @@ def get_hssp(pdb_id, output_type):
 def get_hg_hssp(sequence):
     _log.info("Getting hg-hssp data for '{}'".format(sequence))
 
-    hits = blast_databank(sequence, celery_app.config['HG_HSSP_DATABANK'])
+    hits = blast_databank(sequence, flask_app.config['HG_HSSP_DATABANK'])
     for hitID in hits:
         path, chain = hitID.split(':')
 
         for alignment in hits[hitID]:
+            _log.debug("query:  {}".format(alignment.query_alignment))
+            _log.debug("subject:{}".format(alignment.subj_alignment))
+
             if is_almost_same(sequence, alignment):
                 # Check that it still exists.
                 if not os.path.exists(path):
