@@ -16,6 +16,7 @@
               style="font-family: monospace; font-size: 8pt;"
               rows=30 readonly>
     </textarea>
+    <a id="download" class="btn btn-default">Download</a>
     <br>
     <p>
       Doing this often? Consider using the
@@ -74,6 +75,9 @@
                   "{{ url_for('xssp.get_xssp_result', input_type=input_type, output_type=output_type, id=celery_id) }}",
                 function(data) {
                   $('#output').text(data['result']);
+
+                  $('#download').attr('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(data['result']));
+                  $('#download').attr('download', '{{ celery_id }}.{{ output_type }}');
               });
             }
           }
