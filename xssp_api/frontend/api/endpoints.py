@@ -88,7 +88,11 @@ def get_xssp_result(input_type, output_type, id):
     task = get_task(input_type, output_type)
     _log.debug("task is {}".format(task.__name__))
 
-    result = task.AsyncResult(id).get()
+    async_result = task.AsyncResult(id)
+    if async_result.status != 'SUCCESS':
+        return jsonify({'error': 'job status is {}'.format(async_result.status)}), 500
+
+    result = async_result.get()
     if len(result) <= 0:
         return jsonify({'error': 'empty result'}), 500
 
