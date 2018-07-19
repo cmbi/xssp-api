@@ -20,7 +20,7 @@ from nose.tools import eq_
 XSSP_URL = 'http://www.cmbi.umcn.nl/xssp/api/'
 FMT_CREATE = '{}create/{}/{}/'
 FMT_STATUS = '{}status/{}/{}/{}/'
-FMT_WHY_NOT_PRESENT = 'http://www.cmbi.ru.nl/WHY_NOT2/resources/list/{}'
+FMT_WHY_NOT_PRESENT = 'http://www.cmbi.umcn.nl/WHY_NOT2/resources/list/{}'
 
 MAX_POLLS = 24
 
