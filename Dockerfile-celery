@@ -20,7 +20,7 @@ RUN make -j ; make install ; ldconfig
 # xssp
 RUN git clone https://github.com/cmbi/xssp.git /deps/xssp ;\
     cd /deps/xssp ;\
-    git checkout tags/2.2.8
+    git checkout tags/3.0.5
 WORKDIR /deps/xssp
 RUN aclocal ; autoheader ; automake --add-missing ; autoconf
 RUN ./configure ; make -j ; make install
