@@ -106,7 +106,7 @@ def mkhssp_from_sequence(sequence, output_format):
     _log.debug("Created tmp file '{}'".format(tmp_file.name))
     _log.info(sequence)
     try:
-        with tmp_file as f:
+        with open(tmp_file.name, 'w') as f:
             _log.debug("Writing data to '{}'".format(tmp_file.name))
             m = re.search(RE_FASTA_DESCRIPTION, sequence)
             if not m:

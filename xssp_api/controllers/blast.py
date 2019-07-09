@@ -15,6 +15,7 @@ def get_stockholm_sequences(path):
 
     with BZ2File(path, 'r') as f:
         for line in f:
+            line = line.decode('ascii')
             if line.startswith('#=GF RI'):
                 amino_acid_letter = line[22]
                 if amino_acid_letter.islower():

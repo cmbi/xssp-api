@@ -14,6 +14,8 @@ bp = Blueprint('dashboard', __name__)
 
 @bp.route("/", methods=['GET', 'POST'])
 def index():
+    _log.debug("got request for index")
+
     form = XsspForm(allowed_extensions=app.config['ALLOWED_EXTENSIONS'])
     if form.validate_on_submit():
         celery_id = process_request(form.input_type.data, form.output_type.data,

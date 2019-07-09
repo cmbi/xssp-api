@@ -29,7 +29,7 @@ def process_request(input_type, output_type, pdb_id=None, uploaded_files=None,
 
     strategy = XsspStrategyFactory.create(input_type, output_type, pdb_id,
                                           file_path, sequence)
-    _log.debug("Using '{}'".format(strategy.__class__.__name__))
+    _log.info("Using '{}'".format(strategy.__class__.__name__))
     celery_id = strategy()
     _log.info("Job has id '{}'".format(celery_id))
 
