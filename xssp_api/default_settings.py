@@ -31,6 +31,8 @@ DSSP_REDO_ROOT = '/mnt/chelonium/dssp_redo/'
 HSSP_ROOT = '/mnt/chelonium/hssp/'
 HG_HSSP_ROOT = '/mnt/chelonium/hg-hssp'
 HSSP_STO_ROOT = '/mnt/chelonium/hssp3/'
+PDB_ROOT = '/mnt/chelonium/pdb/all/'
+PDB_REDO_ROOT = '/mnt/chelonium/pdb_redo/'
 
 # Database
 MONGODB_URI = 'mongodb://xsspapi_mongo_1'

@@ -1,11 +1,12 @@
 import re
 
+from xssp_api import default_settings as settings
 from flask_wtf import Form
 from wtforms.fields import FileField, SelectField, TextAreaField, TextField
 from wtforms.validators import Regexp
 
 from xssp_api.frontend.validators import (FileExtension, NAminoAcids,
-                                           NotRequiredIfOneOf)
+                                          NotRequiredIfOneOf, PdbidExists)
 
 
 RE_PDB_ID = re.compile(r"^[0-9a-zA-Z]{4}$")
@@ -23,7 +24,8 @@ class XsspForm(Form):
                                        ('hssp_stockholm', 'HSSP (Stockholm)'),
                                        ('hg_hssp', 'HSSP (Human Genome)')])
     pdb_id = TextField(u'PDB code', [NotRequiredIfOneOf(['sequence', 'file_']),
-                                     Regexp(regex=RE_PDB_ID)])
+                                     Regexp(regex=RE_PDB_ID),
+                                     PdbidExists(settings.PDB_ROOT, settings.PDB_REDO_ROOT)])
     sequence = TextAreaField(u'Sequence', [
         NotRequiredIfOneOf(['pdb_id', 'file_']),
         NAminoAcids(min=25)

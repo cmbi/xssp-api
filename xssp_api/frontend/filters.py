@@ -35,3 +35,10 @@ def beautify_docstring(docstring):
         result = '{}\n<p>{}</p>'.format(result, rv)
 
     return Markup(result)
+
+
+_RE_URL = re.compile(r"(https?\://[^ ]+/[^ ]*)")
+
+
+def add_links(html):
+    return _RE_URL.sub(r'<a target="_blank" href="\1">\1</a>', str(html))

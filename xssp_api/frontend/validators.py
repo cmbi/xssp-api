@@ -1,5 +1,6 @@
 import logging
 import re
+import os
 
 from wtforms.validators import Required, StopValidation, ValidationError
 
@@ -111,3 +112,34 @@ class NAminoAcids(object):
 
         if len(seq) < self.min:
             raise ValidationError(self.len_message)
+
+
+class PdbidExists(object):
+    """
+    Validate that the submitted pdb id exists as a file.
+
+    raise ValidationError if the chosen id does not exist.
+    """
+
+    def __init__(self, pdb_root, pdbredo_root):
+        self.pdb_root = pdb_root
+        self.pdbredo_root = pdbredo_root
+
+    def __call__(self, form, field):
+
+        _log.debug("validating pdbid exists")
+
+        input_type = form._fields.get('input_type')
+        id_ = field.data
+
+        whynot_url = "https://www3.cmbi.umcn.nl/WHY_NOT2/search/pdbid/%s/" % id_
+
+        if input_type.data == 'pdb_redo_id':
+            path = os.path.join(self.pdbredo_root, '%s/%s/%s_final.pdb' % (id_[1:3], id_, id_))
+            if not os.path.isfile(path):
+                raise ValidationError("No pdb redo entry for %s. For more info, check %s" % (id_, whynot_url))
+
+        elif input_type.data == 'pdb_id':
+            path = os.path.join(self.pdb_root, "pdb%s.ent.gz" % id_)
+            if not os.path.isfile(path):
+                raise ValidationError("No pdb entry for %s. For more info, check %s" % (id_, whynot_url))

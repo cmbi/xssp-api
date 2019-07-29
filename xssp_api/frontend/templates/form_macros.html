@@ -4,7 +4,7 @@
       {% for field_name, field_errors
          in form.errors|dictsort if field_errors %}
         {% for error in field_errors %}
-          {{ form[field_name].label }}: {{ error }}
+          {{ form[field_name].label }}: {{ error|escape|add_links|safe }}
           <br/>
         {% endfor %}
       {% endfor %}

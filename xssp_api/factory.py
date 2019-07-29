@@ -105,13 +105,10 @@ def create_app(settings=None):
     from xssp_api.middleware import ReverseProxied
     app.wsgi_app = ReverseProxied(app.wsgi_app)
 
-    # Initialise extensions
-    from xssp_api import toolbar
-    toolbar.init_app(app)
-
     # Register jinja2 filters
-    from xssp_api.frontend.filters import beautify_docstring
+    from xssp_api.frontend.filters import beautify_docstring, add_links
     app.jinja_env.filters['beautify_docstring'] = beautify_docstring
+    app.jinja_env.filters['add_links'] = add_links
 
     # Register blueprints
     from xssp_api.frontend.api.endpoints import bp as api_bp

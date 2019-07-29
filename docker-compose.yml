@@ -18,6 +18,7 @@ services:
       - LOG_FILENAME=/var/log/xssp_api/xssp_web.log
     volumes:
       - "/var/log/xssp_api:/var/log/xssp_api"
+      - "/mnt/chelonium:/mnt/chelonium"
     volumes_from:
       - data
 
