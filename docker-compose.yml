@@ -47,7 +47,7 @@ services:
       - mongo
       - rabbitmq
       - redis
-    command: celery -A xssp_api.application:celery worker -B -n xssp.%n
+    command: celery -A xssp_api.application:celery worker -B -n xssp.%n -c 10
     environment:
       - XSSP_API_SETTINGS=/usr/src/app/prd_settings.py
       - LOG_FILENAME=/var/log/xssp_api/xssp_celery.log
