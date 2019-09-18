@@ -160,7 +160,7 @@ def get_hssp(pdb_id, output_type):
 
     # Unzip the file and return the contents
     _log.info("Unzipping '{}'".format(hssp_path))
-    with bz2.BZ2File(hssp_path) as f:
+    with bz2.open(hssp_path, 'rt') as f:
         hssp_content = f.read()
     return hssp_content
 
@@ -184,7 +184,7 @@ def get_hg_hssp(sequence):
 
                 # Unzip the file and return the contents
                 _log.info("Unzipping '{}'".format(path))
-                with bz2.BZ2File(path) as f:
+                with bz2.open(path, 'rt') as f:
                     content = f.read()
                 return content
 
@@ -203,7 +203,7 @@ def get_dssp(pdb_id):
 
     # Unzip the file and return the contents
     _log.info("Reading '{}'".format(dssp_path))
-    with open(dssp_path) as f:
+    with open(dssp_path, 'rt') as f:
         dssp_content = f.read()
     return dssp_content
 
@@ -221,7 +221,7 @@ def get_dssp_redo(pdb_redo_id):
 
     # Unzip the file and return the contents
     _log.info("Reading '{}'".format(dssp_path))
-    with open(dssp_path) as f:
+    with open(dssp_path, 'rt') as f:
         dssp_content = f.read()
     return dssp_content
 
