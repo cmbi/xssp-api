@@ -2,6 +2,9 @@ from celery.schedules import crontab
 from kombu import Exchange, Queue
 
 # Celery
+CELERY_TASK_SERIALIZER = 'pickle'
+CELERY_RESULT_SERIALIZER='pickle'
+CELERY_ACCEPT_CONTENT = ['pickle']
 CELERY_BROKER_URL = 'amqp://guest@xsspapi_rabbitmq_1'
 CELERY_DEFAULT_QUEUE = 'xssp'
 CELERY_QUEUES = (
