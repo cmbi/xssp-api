@@ -1,16 +1,11 @@
-FROM python:2.7
+FROM python:3.7
 
 # dependencies
 RUN mkdir /deps
 RUN apt-get update ;\
-    apt-get install -y make rsync wget git g++ libbz2-dev \
+    apt-get install -y make rsync wget git g++ libbz2-dev libboost-all-dev\
                        doxygen xsltproc docbook docbook-xsl docbook-xml \
                        autoconf automake autotools-dev ncbi-blast\+
-
-# Boost
-WORKDIR /deps
-RUN wget https://dl.bintray.com/boostorg/release/1.70.0/source/boost_1_70_0.tar.bz2 && \
-    tar xjf boost_1_70_0.tar.bz2 && cd boost_1_70_0 && ./bootstrap.sh && ./b2 && ./b2 install --prefix=/usr/local
 
 # libzeep
 RUN git clone https://github.com/mhekkel/libzeep.git /deps/libzeep ;\
@@ -25,7 +20,7 @@ RUN make -j ; make install ; ldconfig
 # xssp
 RUN git clone https://github.com/cmbi/xssp.git /deps/xssp ;\
     cd /deps/xssp ;\
-    git checkout tags/3.0.9
+    git checkout tags/3.0.10
 WORKDIR /deps/xssp
 RUN aclocal ; autoheader ; automake --add-missing ; autoconf
 RUN ./configure ; make -j ; make install

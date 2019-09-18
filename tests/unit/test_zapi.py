@@ -1,7 +1,7 @@
 import inspect
 import json
 import re
-from StringIO import StringIO
+from io import StringIO
 
 from mock import patch
 from nose.tools import eq_, ok_, raises
@@ -42,7 +42,7 @@ class TestEndpoints(object):
         rv = self.app.post('/api/create/pdb_file/hssp_hssp/',
                            data={'file_': (StringIO('not-real-data'),
                                            'fake.pdb')})
-        print rv.data
+        print(rv.data)
         eq_(rv.status_code, 202)
         response = json.loads(rv.data)
         ok_('id' in response)

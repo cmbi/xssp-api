@@ -63,7 +63,7 @@ def test_not_required_if_one_of():
     try:
         NotRequiredIfOneOf(['field2', 'field3'])(mock_form, mock_field1)
     except StopValidation as sve:
-        eq_(sve.message, '')
+        eq_(str(sve), '')
 
     mock_field3.data = ''
 
@@ -74,7 +74,7 @@ def test_not_required_if_one_of():
     try:
         NotRequiredIfOneOf(['field2', 'field3'])(mock_form, mock_field1)
     except StopValidation as sve:
-        eq_(sve.message, '')
+        eq_(str(sve), '')
 
 
 @raises(StopValidation)
@@ -147,7 +147,7 @@ def test_n_amino_acids_none():
     try:
         NAminoAcids(25)(mock_form, mock_field)
     except ValidationError as ve:
-        eq_(ve.message, 'Must be at least 25 amino acids long.')
+        eq_(str(ve), 'Must be at least 25 amino acids long.')
 
 
 def test_n_amino_acids_invalid_set():
@@ -161,7 +161,7 @@ def test_n_amino_acids_invalid_set():
     try:
         NAminoAcids(25)(mock_form, mock_field)
     except ValidationError as ve:
-        eq_(ve.message, 'This field only accepts 1-letter codes from ' +
+        eq_(str(ve), 'This field only accepts 1-letter codes from ' +
                         'the set "ACDEFGHIKLMNPQRSTVWXY".')
 
 
@@ -176,7 +176,7 @@ def test_n_amino_acids_invalid_length():
     try:
         NAminoAcids(25)(mock_form, mock_field)
     except ValidationError as ve:
-        eq_(ve.message, 'Must be at least 25 amino acids long.')
+        eq_(str(ve), 'Must be at least 25 amino acids long.')
 
 
 def test_n_amino_acids_invalid_multi_fasta():
@@ -194,7 +194,7 @@ def test_n_amino_acids_invalid_multi_fasta():
     try:
         NAminoAcids(25)(mock_form, mock_field)
     except ValidationError as ve:
-        eq_(ve.message, expected_message)
+        eq_(str(ve), expected_message)
 
 
 def test_n_amino_acids_invalid_fasta_description():
@@ -212,7 +212,7 @@ def test_n_amino_acids_invalid_fasta_description():
     try:
         NAminoAcids(25)(mock_form, mock_field)
     except ValidationError as ve:
-        eq_(ve.message, expected_message)
+        eq_(str(ve), expected_message)
 
     mock_field.data = '> test\nACDEFGHIK'
 
@@ -222,4 +222,4 @@ def test_n_amino_acids_invalid_fasta_description():
     try:
         NAminoAcids(25)(mock_form, mock_field)
     except ValidationError as ve:
-        eq_(ve.message, expected_message)
+        eq_(str(ve), expected_message)

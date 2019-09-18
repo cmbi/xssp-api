@@ -8,7 +8,7 @@ def test_beautify_docstring():
          ":return: It returns something.\nAlso on multiple lines."
     bds = beautify_docstring(ds)
 
-    print bds
+    print(bds)
 
     assert "<p>This is the summary.\n\nThis is also part of the " + \
            "summary.\n\n</p>" in bds
