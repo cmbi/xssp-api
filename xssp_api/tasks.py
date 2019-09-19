@@ -101,7 +101,8 @@ def mkhssp_from_sequence(sequence, output_format):
     # a PDB file.
     tmp_file = tempfile.NamedTemporaryFile(prefix='hssp_api_tmp',
                                            suffix='.fasta',
-                                           delete=False)
+                                           delete=False,
+                                           mode='w+t')
     _log.debug("Created tmp file '{}'".format(tmp_file.name))
     _log.info(sequence)
     try:
@@ -117,9 +118,9 @@ def mkhssp_from_sequence(sequence, output_format):
             f.write(textwrap.fill(sequence, 79))
 
         args = ['mkhssp', '-i', tmp_file.name]
-        args.extend(reduce(lambda l, a: l + ['-d', a],
-                           flask_app.config['XSSP_DATABANKS'],
-                           []))
+        for d in flask_app.config['XSSP_DATABANKS']:
+            args.extend(['-d', d])
+
         try:
             _log.info("Running command '{}'".format(args))
             output = subprocess.check_output(args, stderr=subprocess.STDOUT)
