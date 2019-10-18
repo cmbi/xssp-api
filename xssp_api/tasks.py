@@ -40,7 +40,7 @@ def mkdssp_from_pdb(self, pdb_file_path):
     try:
         args = ['mkdssp', '-i', pdb_file_path]
         _log.info("Running command '{}'".format(args))
-        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT).decode('ascii')
     except subprocess.CalledProcessError as e:
         _log.error("Error: {}".format(e.output))
         # Copy the file so developers can access the pdb content to
@@ -66,7 +66,7 @@ def mkhssp_from_pdb(self, pdb_file_path, output_format):
         for d in flask_app.config['XSSP_DATABANKS']:
             args.extend(['-d', d])
         _log.info("Running command '{}'".format(args))
-        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT).decode('ascii')
 
         if output_format == 'hssp_hssp':
             return _stockholm_to_hssp(output)
@@ -123,7 +123,7 @@ def mkhssp_from_sequence(sequence, output_format):
 
         try:
             _log.info("Running command '{}'".format(args))
-            output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+            output = subprocess.check_output(args, stderr=subprocess.STDOUT).decode('ascii')
         except subprocess.CalledProcessError as e:
             _log.error("Error: {}".format(e.output))
             raise RuntimeError(e.output)
@@ -266,22 +266,22 @@ def get_task(input_type, output_type):
     return task
 
 
-def _stockholm_to_hssp(stockholm_data):
+def _stockholm_to_hssp(stockholm_text):
     _log.info("Converting stockholm to hssp")
 
     tmp_file = tempfile.NamedTemporaryFile(prefix='hssp_api_tmp',
-                                           delete=False)
+                                           delete=False, mode='w+t')
     _log.debug("Created tmp file '{}'".format(tmp_file.name))
 
     try:
         with tmp_file as f:
-            _log.debug("Writing data to '{}'".format(tmp_file.name))
-            f.write(stockholm_data)
+            _log.debug("Writing text to '{}'".format(tmp_file.name))
+            f.write(stockholm_text)
 
         _log.info("Calling hsspconv")
         args = ['hsspconv', '-i', tmp_file.name]
         _log.debug("Running command '{}'".format(args))
-        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT).decode('ascii')
 
         return output
     except subprocess.CalledProcessError as e:
