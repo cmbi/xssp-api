@@ -17,11 +17,19 @@ WORKDIR /deps/libzeep
 # Run ldconfig manually to work around a bug in libzeep's makefile
 RUN make -j ; make install ; ldconfig
 
-# xssp
-RUN git clone https://github.com/cmbi/xssp.git /deps/xssp ;\
-    cd /deps/xssp ;\
-    git checkout tags/3.0.10
-WORKDIR /deps/xssp
+# hssp
+RUN git clone https://github.com/cmbi/hssp.git /deps/hssp ;\
+    cd /deps/hssp ;\
+    git checkout tags/3.1.5
+WORKDIR /deps/hssp
+RUN aclocal ; autoheader ; automake --add-missing ; autoconf
+RUN ./configure ; make -j ; make install
+
+# dssp
+RUN git clone https://github.com/cmbi/dssp.git /deps/dssp ;\
+    cd /deps/dssp ;\
+    git checkout tags/3.1.4
+WORKDIR /deps/dssp
 RUN aclocal ; autoheader ; automake --add-missing ; autoconf
 RUN ./configure ; make -j ; make install
 
