@@ -15,6 +15,7 @@ def get_stockholm_sequences(path):
 
     with BZ2File(path, 'r') as f:
         for line in f:
+            line = line.decode('ascii')
             if line.startswith('#=GF RI'):
                 amino_acid_letter = line[22]
                 if amino_acid_letter.islower():
@@ -37,7 +38,7 @@ def get_stockholm_sequences(path):
 def create_databank(hssp_dir_path, databank_path):
     fasta_path = tempfile.mktemp()
     try:
-        with open(fasta_path, 'w') as f:
+        with open(fasta_path, 'wt') as f:
             for filename in os.listdir(hssp_dir_path):
                 if not filename.endswith('.hssp.bz2') and not filename.endswith('.sto.bz2'):
                     continue
@@ -75,7 +76,7 @@ def blast_databank(sequence, databank_path):
     result_path = tempfile.mktemp()
 
     try:
-        with open(fasta_path, 'w') as f:
+        with open(fasta_path, 'wt') as f:
             f.write('>1\n%s\n' % sequence)
 
         subprocess.call([settings.BLASTP, '-query', fasta_path,
