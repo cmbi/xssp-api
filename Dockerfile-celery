@@ -1,11 +1,17 @@
-FROM python:3.7
+FROM python:3.8
 
 # dependencies
 RUN mkdir /deps
 RUN apt-get update ;\
-    apt-get install -y make rsync wget git g++ libbz2-dev libboost-all-dev\
+    apt-get install -y make rsync wget git g++ libbz2-dev \
                        doxygen xsltproc docbook docbook-xsl docbook-xml \
                        autoconf automake autotools-dev ncbi-blast\+
+
+# boost
+RUN wget https://dl.bintray.com/boostorg/release/1.75.0/source/boost_1_75_0.tar.bz2 ;\
+    tar xjf boost_1_75_0.tar.bz2 -C /deps/ ;\
+    cd /deps/boost_1_75_0 ;\
+    ./bootstrap.sh && ./b2 && ./b2 install
 
 # libzeep
 RUN git clone https://github.com/mhekkel/libzeep.git /deps/libzeep ;\
@@ -25,12 +31,25 @@ WORKDIR /deps/hssp
 RUN aclocal ; autoheader ; automake --add-missing ; autoconf
 RUN ./configure ; make -j ; make install
 
+# mrc
+RUN git clone https://github.com/mhekkel/mrc.git /deps/mrc ;\
+    cd /deps/mrc ;\
+    git checkout tags/v1.2.3
+WORKDIR /deps/mrc 
+RUN ./configure ; make -j ; make install
+
+# libcipp
+RUN git clone https://github.com/PDB-REDO/libcifpp.git /deps/libcipp ;\
+    cd /deps/libcipp ;\
+    git checkout tags/v1.0.1
+WORKDIR /deps/libcipp
+RUN ./configure ; make -j ; make install
+
 # dssp
-RUN git clone https://github.com/cmbi/dssp.git /deps/dssp ;\
+RUN git clone https://github.com/PDB-REDO/dssp.git /deps/dssp ;\
     cd /deps/dssp ;\
-    git checkout tags/3.1.4
+    git checkout tags/v4.0.0
 WORKDIR /deps/dssp
-RUN aclocal ; autoheader ; automake --add-missing ; autoconf
 RUN ./configure ; make -j ; make install
 
 # xssp-api
