@@ -42,7 +42,7 @@ def mkdssp_from_pdb(self, pdb_file_path):
         _log.info("Running command '{}'".format(args))
         output = subprocess.check_output(args, stderr=subprocess.STDOUT).decode('ascii')
     except subprocess.CalledProcessError as e:
-        _log.error("Error: {}".format(e.output))
+        _log.error("{}: {}".format(args, e.output))
         # Copy the file so developers can access the pdb content to
         # reproduce the error. The renamed file is never deleted by xssp-api.
         head, tail = os.path.split(pdb_file_path)
@@ -73,7 +73,7 @@ def mkhssp_from_pdb(self, pdb_file_path, output_format):
         else:
             return output
     except subprocess.CalledProcessError as e:
-        _log.error("Error: {}".format(e.output))
+        _log.error("{}: {}".format(args, e.output))
         # Copy the file so developers can access the pdb content to
         # reproduce the error. The renamed file is never deleted by xssp-api.
         head, tail = os.path.split(pdb_file_path)
@@ -125,7 +125,7 @@ def mkhssp_from_sequence(sequence, output_format):
             _log.info("Running command '{}'".format(args))
             output = subprocess.check_output(args, stderr=subprocess.STDOUT).decode('ascii')
         except subprocess.CalledProcessError as e:
-            _log.error("Error: {}".format(e.output))
+            _log.error("{}: {}".format(args, e.output))
             raise RuntimeError(e.output)
 
         if output_format == 'hssp_hssp':
@@ -285,7 +285,7 @@ def _stockholm_to_hssp(stockholm_text):
 
         return output
     except subprocess.CalledProcessError as e:
-        _log.error("Error: {}".format(e.output))
+        _log.error("{}: {}".format(args, e.output))
         raise
     finally:
         _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
