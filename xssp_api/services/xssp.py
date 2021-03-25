@@ -17,6 +17,9 @@ def process_request(input_type, output_type, pdb_id=None, uploaded_files=None,
         assert hasattr(pdb_file, 'filename')
 
         filename = secure_filename(pdb_file.filename)
+        if len(filename) == 0:
+            raise RuntimeError("upload secure filename is an empty string")
+
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         pdb_file.save(file_path)
         _log.debug("User uploaded '{}'. File saved to {}".format(
