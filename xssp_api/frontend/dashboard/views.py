@@ -1,4 +1,5 @@
 import logging
+import traceback
 
 from flask import (Blueprint, current_app as app, g, redirect, render_template,
                    request, url_for)
@@ -46,7 +47,7 @@ def queue():
 
 @bp.errorhandler(Exception)
 def exception_error_handler(error):  # pragma: no cover
-    _log.error("Unhandled exception: {}".format(error))
+    _log.error("Unhandled exception:\n".format(traceback.format_exc()))
     return render_template('dashboard/error.html', msg=error), 500
 
 
