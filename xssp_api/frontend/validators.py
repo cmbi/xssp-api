@@ -135,11 +135,11 @@ class PdbidExists(object):
         whynot_url = "https://www3.cmbi.umcn.nl/WHY_NOT2/search/pdbid/%s/" % id_
 
         if input_type.data == 'pdb_redo_id':
-            path = os.path.join(self.pdbredo_root, '%s/%s/%s_final.pdb' % (id_[1:3], id_, id_))
+            path = os.path.join(self.pdbredo_root, '%s/%s/%s_final.pdb' % (id_[1:3].lower(), id_.lower(), id_.lower()))
             if not os.path.isfile(path):
                 raise ValidationError("No pdb redo entry for %s. For more info, check %s" % (id_, whynot_url))
 
         elif input_type.data == 'pdb_id':
-            path = os.path.join(self.pdb_root, "pdb%s.ent.gz" % id_)
+            path = os.path.join(self.pdb_root, "pdb%s.ent.gz" % id_.lower())
             if not os.path.isfile(path):
                 raise ValidationError("No pdb entry for %s. For more info, check %s" % (id_, whynot_url))
