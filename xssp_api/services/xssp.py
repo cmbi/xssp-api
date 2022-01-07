@@ -2,7 +2,7 @@ import logging
 import os
 
 from flask import current_app as app
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 
 _log = logging.getLogger(__name__)
 

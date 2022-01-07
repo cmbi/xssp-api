@@ -240,7 +240,7 @@ class TestTasks(object):
         eq_(content, 'data')
         mock_exists.assert_called_once_with('/dssp_redo/1crn.dssp')
 
-    @patch('bz2.BZ2File')
+    @patch('bz2.open')
     @patch('os.path.exists', return_value=True)
     def test_get_hssp_hssp(self, mock_exists, mock_bz2file):
         instance = mock_bz2file.return_value
@@ -252,7 +252,7 @@ class TestTasks(object):
         eq_(content, 'data')
         mock_exists.assert_called_once_with('/hssp/1crn.hssp.bz2')
 
-    @patch('bz2.BZ2File')
+    @patch('bz2.open')
     @patch('os.path.exists', return_value=True)
     def test_get_hssp_hssp_upper(self, mock_exists, mock_bz2file):
         instance = mock_bz2file.return_value
@@ -264,7 +264,7 @@ class TestTasks(object):
         eq_(content, 'data')
         mock_exists.assert_called_once_with('/hssp/1crn.hssp.bz2')
 
-    @patch('bz2.BZ2File')
+    @patch('bz2.open')
     @patch('os.path.exists', return_value=True)
     def test_get_hssp_stockholm(self, mock_exists, mock_bz2file):
         instance = mock_bz2file.return_value
@@ -276,7 +276,7 @@ class TestTasks(object):
         eq_(content, 'data')
         mock_exists.assert_called_once_with('/hssp3/1crn.hssp.bz2')
 
-    @patch('bz2.BZ2File')
+    @patch('bz2.open')
     @patch('os.path.exists', return_value=True)
     def test_get_hg_hssp(self, mock_exists, mock_bz2file):
         instance = mock_bz2file.return_value

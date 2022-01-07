@@ -40,7 +40,7 @@ def mkdssp_from_pdb(self, pdb_file_path):
     try:
         args = ['mkdssp', '-i', pdb_file_path]
         _log.info("Running command '{}'".format(args))
-        output = subprocess.check_output(args, stderr=subprocess.STDOUT).decode('ascii')
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         _log.error("{}: {}".format(args, e.output))
         # Copy the file so developers can access the pdb content to
@@ -66,7 +66,7 @@ def mkhssp_from_pdb(self, pdb_file_path, output_format):
         for d in flask_app.config['XSSP_DATABANKS']:
             args.extend(['-d', d])
         _log.info("Running command '{}'".format(args))
-        output = subprocess.check_output(args, stderr=subprocess.STDOUT).decode('ascii')
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
 
         if output_format == 'hssp_hssp':
             return _stockholm_to_hssp(output)
@@ -123,7 +123,7 @@ def mkhssp_from_sequence(sequence, output_format):
 
         try:
             _log.info("Running command '{}'".format(args))
-            output = subprocess.check_output(args, stderr=subprocess.STDOUT).decode('ascii')
+            output = subprocess.check_output(args, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             _log.error("{}: {}".format(args, e.output))
             raise RuntimeError(e.output)
@@ -281,7 +281,7 @@ def _stockholm_to_hssp(stockholm_text):
         _log.info("Calling hsspconv")
         args = ['hsspconv', '-i', tmp_file.name]
         _log.debug("Running command '{}'".format(args))
-        output = subprocess.check_output(args, stderr=subprocess.STDOUT).decode('ascii')
+        output = subprocess.check_output(args, stderr=subprocess.STDOUT)
 
         return output
     except subprocess.CalledProcessError as e:

@@ -52,16 +52,11 @@ class Storage(object):
 
         self.db['tasks'].create_index([('task_id', ASCENDING)])
 
-    def insert(self, collection, documents):
+    def insert_one(self, collection, document):
         if self._db is None:
             raise Exception("Not connected to storage. Did you call connect()?")
 
-        if len(documents) == 0:
-            raise ValueError("Document list is empty. Nothing to insert.")
-
-        _log.info("Inserting {} documents into '{}'".format(len(documents),
-                                                            collection))
-        return self._db[collection].insert(documents)
+        self._db[collection].insert_one(document)
 
     def remove(self, collection, spec_or_id=None):
         if self._db is None:

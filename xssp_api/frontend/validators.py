@@ -2,7 +2,7 @@ import logging
 import re
 import os
 
-from wtforms.validators import Required, StopValidation, ValidationError
+from wtforms.validators import InputRequired, StopValidation, ValidationError
 
 
 RE_FASTA_DESCRIPTION = re.compile(r"^>\S.*\n")
@@ -34,7 +34,7 @@ class FileExtension(object):
             raise ValidationError(self.message)
 
 
-class NotRequiredIfOneOf(Required):
+class NotRequiredIfOneOf(InputRequired):
     """
     Validate a field if and only if all other fields have not been given.
 

@@ -80,15 +80,15 @@ def test_not_required_if_one_of():
 @raises(StopValidation)
 def test_not_required_if_one_of_failed():
     mock_field1 = Mock()
-    mock_field1.data = ''
+    mock_field1.raw_data = ''
     mock_field1.errors = []
 
     mock_field2 = Mock()
-    mock_field2.data = ''
+    mock_field2.raw_data = ''
     mock_field2.errors = []
 
     mock_field3 = Mock()
-    mock_field3.data = ''
+    mock_field3.raw_data = ''
     mock_field3.errors = []
 
     mock_form = Mock()

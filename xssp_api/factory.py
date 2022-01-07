@@ -86,7 +86,6 @@ def create_app(settings=None):
             os.makedirs(app.config['UPLOAD_FOLDER'])
         except OSError as ex:
             _log.error("Error creating upload folder: {}".format(ex))
-            sys.exit(1)
 
     # Check that the process has permission to write in the upload folder
     try:
