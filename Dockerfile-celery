@@ -7,6 +7,7 @@ RUN apt-get update ;\
                        doxygen xsltproc docbook docbook-xsl docbook-xml \
                        autoconf automake autotools-dev ncbi-blast\+
 
+
 # boost
 RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.bz2 ;\
     tar xjf boost_1_78_0.tar.bz2 -C /deps/ ;\

@@ -9,6 +9,7 @@
 <form id="xssp_form" method="post" action="{{ url_for('dashboard.index') }}"
       role="form" enctype="multipart/form-data">
   {{ form.hidden_tag() }}
+  {{ form.csrf_token }}
 
   <div class="row">
     <div class="col-xs-6">
