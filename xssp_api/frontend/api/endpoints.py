@@ -31,7 +31,7 @@ def create_xssp(input_type, output_type):
     :return: The id of the job.
     """
     form = XsspForm(allowed_extensions=app.config['ALLOWED_EXTENSIONS'],
-                    csrf_enabled=False)
+                    meta={'csrf': False})
     form.input_type.data = input_type
     form.output_type.data = output_type
     form.sequence.data = request.form.get('data', None)
