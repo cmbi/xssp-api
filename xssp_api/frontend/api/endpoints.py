@@ -27,7 +27,7 @@ def create_xssp(input_type, output_type):
     'file_' format.
 
     :param input_type: Either 'pdb_id', 'pdb_redo_id', 'pdb_file' or 'sequence'.
-    :param output_type: Either 'hssp_hssp', 'hssp_stockholm', or 'dssp'.
+    :param output_type: Either 'hssp_hssp', 'hssp_stockholm', 'hg_hssp', or 'dssp'.
     :return: The id of the job.
     """
     form = XsspForm(allowed_extensions=app.config['ALLOWED_EXTENSIONS'],
