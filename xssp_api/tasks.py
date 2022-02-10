@@ -37,10 +37,17 @@ def setup_logging_handler(*args, **kwargs):
 @celery_app.task(bind=True)
 def mkdssp_from_pdb(self, pdb_file_path):
     """Creates a DSSP file from the given pdb file path."""
+
+    output_path = "{}.dssp".format(pdb_file_path)
+
     try:
-        args = ['mkdssp', '-i', pdb_file_path]
+        args = ['mkdssp', pdb_file_path, output_path]
         _log.info("Running command '{}'".format(args))
-        output = subprocess.check_output(args, stderr=subprocess.STDOUT, text=True)
+        subprocess.check_output(args, stderr=subprocess.STDOUT, text=True)
+
+        with open(output_path, 'r') as f:
+            output = f.read()
+
     except subprocess.CalledProcessError as e:
         _log.error("{}: {}".format(args, e.output))
         # Copy the file so developers can access the pdb content to

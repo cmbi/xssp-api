@@ -50,12 +50,12 @@ RUN cmake .. && cmake --build . --config Release && ctest -C Release && cmake --
 
 # dssp
 RUN git clone https://github.com/PDB-REDO/dssp.git /deps/dssp ;\
-    cd /deps/dssp
+    cd /deps/dssp ; git checkout tags/v4.0.3
 WORKDIR /deps/dssp
 RUN mkdir build
 WORKDIR /deps/dssp/build
 RUN wget http://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/cb/1cbs.cif.gz
-RUN cmake -DCMAKE_PREFIX_PATH=/root/.local .. && cmake --build . --config Release && ctest -DCMAKE_PREFIX_PATH=/root/.local -C Release && cmake --install .
+RUN cmake -DCMAKE_PREFIX_PATH=/usr/local .. && cmake --build . --config Release && cmake --install . --prefix /usr/local
 
 # xssp-api
 RUN mkdir -p /usr/src/app
