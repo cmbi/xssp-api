@@ -129,7 +129,7 @@ def mkhssp_from_sequence(sequence, output_format):
             # The fasta format recommends that all lines be less than 80 chars.
             f.write(textwrap.fill(sequence, 79))
 
-        args = ['mkhssp', '-i', tmp_file.name]
+        args = ['mkhssp', '-i', tmp_file.name, '-a', '1', '-m', '1000']
         for d in flask_app.config['XSSP_DATABANKS']:
             args.extend(['-d', d])
 
