@@ -34,6 +34,10 @@ def setup_logging_handler(*args, **kwargs):
     pass
 
 
+def should_log(exception):
+    return "Expected record CRYST1 but found ATOM" not in exception.output
+
+
 @celery_app.task(bind=True)
 def mkdssp_from_pdb(self, pdb_file_path):
     """Creates a DSSP file from the given pdb file path."""
@@ -49,7 +53,8 @@ def mkdssp_from_pdb(self, pdb_file_path):
             output = f.read()
 
     except subprocess.CalledProcessError as e:
-        _log.error("{}: {}".format(args, e.output))
+        if should_log(e):
+            _log.error("{}: {}".format(args, e.output))
         # Copy the file so developers can access the pdb content to
         # reproduce the error. The renamed file is never deleted by xssp-api.
         head, tail = os.path.split(pdb_file_path)
