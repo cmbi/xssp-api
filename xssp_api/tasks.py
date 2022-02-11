@@ -74,7 +74,7 @@ def mkdssp_from_pdb(self, pdb_file_path):
 def mkhssp_from_pdb(self, pdb_file_path, output_format):
     """Creates a HSSP file from the given pdb file path."""
     try:
-        args = ['mkhssp', '-i', pdb_file_path]
+        args = ['mkhssp', '-i', pdb_file_path, '-a', '1', '-m', '1000']
         for d in flask_app.config['XSSP_DATABANKS']:
             args.extend(['-d', d])
         _log.info("Running command '{}'".format(args))
