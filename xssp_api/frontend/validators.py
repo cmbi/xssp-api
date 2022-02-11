@@ -28,6 +28,9 @@ class FileExtension(object):
 
     def __call__(self, form, field):
         field.errors = []
+        if field.data is None:
+            raise ValidationError("filename not set")
+
         name = field.data.filename
         if '.' not in name or \
                 name.rsplit('.', 1)[1].lower() not in self.allowed:
