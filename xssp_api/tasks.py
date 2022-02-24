@@ -35,6 +35,9 @@ def setup_logging_handler(*args, **kwargs):
 
 
 def should_log(exception):
+    if len(exception.output.strip()) == 0:
+        return False
+
     return "Expected record CRYST1 but found ATOM" not in exception.output
 
 
