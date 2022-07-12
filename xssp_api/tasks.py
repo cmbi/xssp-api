@@ -38,7 +38,8 @@ def should_log(exception):
     if len(exception.output.strip()) == 0:
         return False
 
-    return "Expected record CRYST1 but found ATOM" not in exception.output
+    return "Expected record CRYST1 but found ATOM" not in exception.output and \
+           "Error parsing PDB" not in exception.output
 
 
 @celery_app.task(bind=True)
