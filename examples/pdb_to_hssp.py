@@ -4,7 +4,7 @@ creates HSSP data. The HSSP data is then output to the console.
 
 Example:
 
-    python pdb_to_hssp.py 1crn.pdb http://www.cmbi.umcn.nl/xssp/
+    python pdb_to_hssp.py 1crn.pdb https://www3.cmbi.umcn.nl/xssp/
 """
 
 import argparse
