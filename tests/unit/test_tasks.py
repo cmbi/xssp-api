@@ -1,6 +1,10 @@
 import os
+import shutil
 import subprocess
 import tempfile
+import unittest
+import logging
+from io import StringIO
 
 from mock import ANY, call, mock_open, patch
 from nose.tools import eq_, raises
@@ -8,18 +12,30 @@ from nose.tools import eq_, raises
 from xssp_api.factory import create_app, create_celery_app
 
 
-class TestTasks(object):
+_log = logging.getLogger(__name__)
+
+
+class TestTasks(unittest.TestCase):
 
     @classmethod
-    def setup_class(cls):
+    def setUpClass(cls):
+        cls.sto_cache_dir = f'/tmp/xssp_sto_test_{os.getpid()}'
+        _log.debug("create directory {}".format(cls.sto_cache_dir))
+        os.mkdir(cls.sto_cache_dir)
+
         flask_app = create_app({'TESTING': True,
                                 'CELERY_ALWAYS_EAGER': True,
                                 'DSSP_ROOT': '/dssp/',
                                 'DSSP_REDO_ROOT': '/dssp_redo/',
                                 'HSSP_ROOT': '/hssp/',
                                 'HSSP_STO_ROOT': '/hssp3/',
-                                'HG_HSSP_ROOT': '/hg-hssp/'})
+                                'HG_HSSP_ROOT': '/hg-hssp/',
+                                'HSSP_STO_CACHE': cls.sto_cache_dir})
         cls.celery = create_celery_app(flask_app)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.sto_cache_dir)
 
     @patch('subprocess.check_output')
     def test_mkdssp_from_pdb(self, mock_subprocess):
@@ -135,9 +151,11 @@ class TestTasks(object):
         finally:
             os.remove(error_pdb_path)
 
-    @patch('subprocess.check_output')
-    def test_mkhssp_from_sequence(self, mock_subprocess):
-        mock_subprocess.return_value = "output"
+    @patch('subprocess.check_call')
+    @patch('bz2.open')
+    def test_mkhssp_from_sequence(self, mock_open, mock_subprocess):
+        mock_subprocess.side_effect = None
+        mock_open.return_value = StringIO("output")
 
         from xssp_api.tasks import mkhssp_from_sequence
         result = mkhssp_from_sequence.delay('sequence', 'hssp_stockholm')
@@ -145,8 +163,10 @@ class TestTasks(object):
         eq_(result.get(), "output")
         mock_subprocess.assert_called_once_with(['mkhssp',
                                                  '-i', ANY,
+                                                 '-o', ANY,
                                                  '-d', ANY,
-                                                 '-d', ANY], stderr=ANY)
+                                                 '-d', ANY])
+
 
     @patch('subprocess.check_output')
     def test_mkhssp_from_fasta(self, mock_subprocess):
@@ -156,10 +176,6 @@ class TestTasks(object):
         result = mkhssp_from_sequence.delay('>test\nseq', 'hssp_stockholm')
 
         eq_(result.get(), "output")
-        mock_subprocess.assert_called_once_with(['mkhssp',
-                                                 '-i', ANY,
-                                                 '-d', ANY,
-                                                 '-d', ANY], stderr=ANY)
 
     @patch('subprocess.check_output')
     def test_mkhssp_from_sequence_hssp_hssp(self, mock_subprocess):
@@ -170,7 +186,7 @@ class TestTasks(object):
 
         eq_(result.get(), "output2")
         mock_subprocess.assert_has_calls([
-            call(['mkhssp', '-i', ANY, '-d', ANY, '-d', ANY], stderr=ANY),
+            call(['mkhssp', '-i', ANY, '-o', ANY, '-d', ANY, '-d', ANY], stderr=ANY),
             call(['hsspconv', '-i', ANY], stderr=ANY)])
 
     @patch('subprocess.check_output')

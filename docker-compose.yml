@@ -19,6 +19,7 @@ services:
     volumes:
       - "/var/log/xssp_api:/var/log/xssp_api"
       - "/mnt/chelonium:/mnt/chelonium"
+      - "/srv/xssp:/srv"
     volumes_from:
       - data
 
