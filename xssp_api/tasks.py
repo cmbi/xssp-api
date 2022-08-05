@@ -111,7 +111,7 @@ def mkhssp_from_sequence(sequence, output_format):
         with FileLock(lock_path):
 
             if os.path.isfile(stockholm_file_path):
-                with open(stockholm_file_path, 'rt') as f:
+                with bz2.open(stockholm_file_path, 'rt') as f:
                     output = f.read()
             else:
                 tmp_file, tmp_path = tempfile.mkstemp(prefix='hssp_api_tmp', suffix='.fasta')
