@@ -8,7 +8,9 @@ import tempfile
 import textwrap
 import uuid
 import datetime
+from typing import List
 
+from filelock import FileLock
 from celery import current_app as celery_app
 from celery.signals import setup_logging, task_prerun
 from flask import current_app as flask_app
@@ -16,6 +18,7 @@ from flask import current_app as flask_app
 from xssp_api.frontend.validators import RE_FASTA_DESCRIPTION
 from xssp_api.storage import storage
 
+from xssp_api.controllers.identify import get_identifier
 from xssp_api.controllers.blast import blast_databank
 from xssp_api.domain.method import is_almost_same
 
@@ -34,6 +37,18 @@ def setup_logging_handler(*args, **kwargs):
     pass
 
 
+
+def _execute_subprocess(args: List[str]):
+
+    _log.info("Running command '{}'".format(args))
+    p = subprocess.run(args, capture_output=True, text=True)
+
+    if p.returncode != 0:
+        raise RuntimeError(f"{args} error:\n{p.stderr}")
+
+    return p.stdout, p.stderr
+
+
 def should_log(exception):
     if len(exception.output.strip()) == 0:
         return False
@@ -46,27 +61,11 @@ def should_log(exception):
 def mkdssp_from_pdb(self, pdb_file_path):
     """Creates a DSSP file from the given pdb file path."""
 
-    output_path = "{}.dssp".format(pdb_file_path)
-
     try:
-        args = ['mkdssp', pdb_file_path, output_path]
-        _log.info("Running command '{}'".format(args))
-        subprocess.check_output(args, stderr=subprocess.STDOUT, text=True)
-
-        with open(output_path, 'r') as f:
-            output = f.read()
-
-    except subprocess.CalledProcessError as e:
-        if should_log(e):
-            _log.error("{}: {}".format(args, e.output))
-        # Copy the file so developers can access the pdb content to
-        # reproduce the error. The renamed file is never deleted by xssp-api.
-        head, tail = os.path.split(pdb_file_path)
-        error_pdb_path = os.path.join(head,
-                                      '{}_{}'.format(self.request.id, tail))
-        shutil.copyfile(pdb_file_path, error_pdb_path)
-        _log.info("Copied '{}' to '{}'".format(pdb_file_path, error_pdb_path))
-        raise RuntimeError(e.output)
+        args = ['mkdssp', '-i', pdb_file_path]
+        output, error = _execute_subprocess(args)
+        if len(output.strip()) == 0:
+            raise RuntimeError(error)
     finally:
         _log.debug("Deleting PDB file '{}'".format(pdb_file_path))
         os.remove(pdb_file_path)
@@ -77,27 +76,21 @@ def mkdssp_from_pdb(self, pdb_file_path):
 @celery_app.task(bind=True)
 def mkhssp_from_pdb(self, pdb_file_path, output_format):
     """Creates a HSSP file from the given pdb file path."""
+
     try:
         args = ['mkhssp', '-i', pdb_file_path, '-a', '1', '-m', '1000']
         for d in flask_app.config['XSSP_DATABANKS']:
             args.extend(['-d', d])
-        _log.info("Running command '{}'".format(args))
-        output = subprocess.check_output(args, stderr=subprocess.STDOUT, text=True)
+
+        output, error = _execute_subprocess(args)
+        if len(output.strip()) == 0:
+            raise RuntimeError(error)
 
         if output_format == 'hssp_hssp':
+
             return _stockholm_to_hssp(output)
         else:
             return output
-    except subprocess.CalledProcessError as e:
-        _log.error("{}: {}".format(args, e.output))
-        # Copy the file so developers can access the pdb content to
-        # reproduce the error. The renamed file is never deleted by xssp-api.
-        head, tail = os.path.split(pdb_file_path)
-        error_pdb_path = os.path.join(head,
-                                      '{}_{}'.format(self.request.id, tail))
-        shutil.copyfile(pdb_file_path, error_pdb_path)
-        _log.info("Copied '{}' to '{}'".format(pdb_file_path, error_pdb_path))
-        raise RuntimeError(e.output)
     finally:
         _log.debug("Deleting PDB file '{}'".format(pdb_file_path))
         os.remove(pdb_file_path)
@@ -115,46 +108,57 @@ def mkhssp_from_sequence(sequence, output_format):
     """
     # The temporary file name must end in .fasta, otherwise mkhssp assumes it's
     # a PDB file.
-    tmp_file = tempfile.NamedTemporaryFile(prefix='hssp_api_tmp',
-                                           suffix='.fasta',
-                                           delete=False,
-                                           mode='w+t')
-    _log.debug("Created tmp file '{}'".format(tmp_file.name))
-    _log.info(sequence)
+
+
+    sequence_id = get_identifier(sequence)
+    stockholm_cache_dir = flask_app.config["HSSP_STO_CACHE"]
+    stockholm_file_path = os.path.join(stockholm_cache_dir, sequence_id + ".sto.bz2")
+
     try:
-        with tmp_file as f:
-            _log.debug("Writing data to '{}'".format(tmp_file.name))
-            m = re.search(RE_FASTA_DESCRIPTION, sequence)
-            if not m:
-                f.write('>Input\n')
+        lock_path = stockholm_file_path + ".lock"
+        with FileLock(lock_path):
+
+            if os.path.isfile(stockholm_file_path):
+                with bz2.open(stockholm_file_path, 'rt') as f:
+                    output = f.read()
             else:
-                f.write(m.group())
-                sequence = re.sub(RE_FASTA_DESCRIPTION, '', sequence)
-            # The fasta format recommends that all lines be less than 80 chars.
-            f.write(textwrap.fill(sequence, 79))
+                tmp_file, tmp_path = tempfile.mkstemp(prefix='hssp_api_tmp', suffix='.fasta')
+                os.close(tmp_file)
 
-        args = ['mkhssp', '-i', tmp_file.name, '-a', '1', '-m', '1000']
-        for d in flask_app.config['XSSP_DATABANKS']:
-            args.extend(['-d', d])
+                with open(tmp_path, 'wt') as f:
 
-        try:
-            _log.info("Running command '{}'".format(args))
-            output = subprocess.check_output(args, stderr=subprocess.STDOUT, text=True)
-        except subprocess.CalledProcessError as e:
-            _log.error("{}: {}".format(args, e.output))
-            raise RuntimeError(e.output)
+                    _log.debug("Writing data to '{}'".format(tmp_path))
+                    m = re.search(RE_FASTA_DESCRIPTION, sequence)
+                    if not m:
+                        f.write('>Input\n' + sequence)
+                    else:
+                        f.write(m.group())
+                        sequence = re.sub(RE_FASTA_DESCRIPTION, '', sequence)
+                    # The fasta format recommends that all lines be less than 80 chars.
+                    f.write(textwrap.fill(sequence, 79))
 
-        if output_format == 'hssp_hssp':
-            return _stockholm_to_hssp(output)
-        else:
-            return output
-    except subprocess.CalledProcessError as e:
-        # Celery cannot pickle a CalledProcessError. Convert to RuntimeError.
-        raise RuntimeError(e.output)
+                args = ['mkhssp', '-i', tmp_path]
+                for databank_path in flask_app.config['XSSP_DATABANKS']:
+                    args.extend(['-d', databank_path])
+
+                try:
+                    output, error = _execute_subprocess(args)
+
+                    # store in cache
+                    if len(output) > 0:
+                        with bz2.open(stockholm_file_path, 'wt') as f:
+                            f.write(output)
+                    else:
+                        raise RuntimeError(error)
+                finally:
+                    os.remove(tmp_path)
     finally:
-        _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
-        os.remove(tmp_file.name)
+        os.remove(lock_path)
 
+    if output_format == 'hssp_hssp':
+        return _stockholm_to_hssp(output)
+    else:
+        return output
 
 @celery_app.task
 def get_hssp(pdb_id, output_type):
@@ -282,30 +286,26 @@ def get_task(input_type, output_type):
     return task
 
 
-def _stockholm_to_hssp(stockholm_text):
+def _stockholm_to_hssp(stockholm_content):
     _log.info("Converting stockholm to hssp")
 
-    tmp_file = tempfile.NamedTemporaryFile(prefix='hssp_api_tmp',
-                                           delete=False, mode='w+t')
-    _log.debug("Created tmp file '{}'".format(tmp_file.name))
+    tmp_file, tmp_path = tempfile.mkstemp(prefix='hssp_api_tmp', suffix='.hssp')
+    os.close(tmp_file)
 
     try:
-        with tmp_file as f:
-            _log.debug("Writing text to '{}'".format(tmp_file.name))
-            f.write(stockholm_text)
+        with open(tmp_path, 'wt') as f:
+            f.write(stockholm_content)
 
-        _log.info("Calling hsspconv")
-        args = ['hsspconv', '-i', tmp_file.name]
-        _log.debug("Running command '{}'".format(args))
-        output = subprocess.check_output(args, stderr=subprocess.STDOUT, text=True)
+        args = ['hsspconv', '-i', tmp_path]
 
-        return output
-    except subprocess.CalledProcessError as e:
-        _log.error("{}: {}".format(args, e.output))
-        raise
+        output, error = _execute_subprocess(args)
+
+        if len(output) == 0:
+            raise RuntimeError(error)
     finally:
-        _log.debug("Deleting tmp file '{}'".format(tmp_file.name))
-        os.remove(tmp_file.name)
+        os.remove(tmp_path)
+
+    return output
 
 
 @celery_app.task

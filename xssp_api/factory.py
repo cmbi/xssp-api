@@ -121,6 +121,10 @@ def create_app(settings=None):
     storage.db_name = app.config['MONGODB_DB_NAME']
     storage.connect()
 
+    # stockholm cache
+    if not os.path.isdir(app.config["HSSP_STO_CACHE"]):
+        os.mkdir(app.config["HSSP_STO_CACHE"])
+
     return app
 
 

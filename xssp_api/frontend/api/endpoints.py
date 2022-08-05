@@ -37,6 +37,7 @@ def create_xssp(input_type, output_type):
     form.sequence.data = request.form.get('data', None)
     form.pdb_id.data = request.form.get('data', None)
     form.file_.data = request.files.get('file_', None)
+    
     if form.validate():
         celery_id = process_request(form.input_type.data, form.output_type.data,
                                     form.pdb_id.data, request.files,
