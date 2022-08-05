@@ -2,7 +2,7 @@ import logging
 import re
 import os
 
-from wtforms.validators import Required, StopValidation, ValidationError
+from wtforms.validators import InputRequired, StopValidation, ValidationError
 
 
 RE_FASTA_DESCRIPTION = re.compile(r"^>\S.*\n")
@@ -28,43 +28,36 @@ class FileExtension(object):
 
     def __call__(self, form, field):
         field.errors = []
+        if field.data is None:
+            raise ValidationError("filename not set")
+
         name = field.data.filename
         if '.' not in name or \
                 name.rsplit('.', 1)[1].lower() not in self.allowed:
             raise ValidationError(self.message)
 
 
-class NotRequiredIfOneOf(Required):
+class OnlyRequiredIf(object):
     """
-    Validate a field if and only if all other fields have not been given.
+    Validate a field if and only if another field has a given value
 
-    raise StopValidation without a message when other data is found for another
-        field and remove prior errors from the field.
+    raise StopValidation without a message when the other field does not has the given value.
     """
 
-    def __init__(self, other_field_names, *args, **kwargs):
-        self.other_field_names = other_field_names
+    def __init__(self, other_field_name, other_field_values):
+        self._other_field_name = other_field_name
+        self._other_field_values = other_field_values
 
-        self.message = ("This field is required if '{}' "
-                        "{} not been provided.").format(
-                            "' and '".join(other_field_names),
-                            "have" if len(other_field_names) > 0 else "has")
-
-        super(NotRequiredIfOneOf, self).__init__(message=self.message,
-                                                 *args, **kwargs)
+        self.message = "This field is required if {} is {}".format(other_field_name, ' or '.join(other_field_values))
 
     def __call__(self, form, field):
-        for field_name in self.other_field_names:
-            other_field = form._fields.get(field_name)
-            if other_field is None:
-                raise Exception("No field named '{}' in form".format(
-                    field_name))
 
-            if bool(other_field.data):
-                field.errors[:] = []
-                raise StopValidation()
+        other_field = form._fields.get(self._other_field_name)
+        if other_field is None:
+            raise Exception("No field named '{}' in form".format(self._other_field_name))
 
-        super(NotRequiredIfOneOf, self).__call__(form, field)
+        if other_field.data not in self._other_field_values:
+            raise StopValidation()
 
 
 class NAminoAcids(object):
@@ -132,14 +125,17 @@ class PdbidExists(object):
         input_type = form._fields.get('input_type')
         id_ = field.data
 
+        if type(id_) != str or id_.strip() == "":
+            raise ValidationError("No pdb entry for an empty id")
+
         whynot_url = "https://www3.cmbi.umcn.nl/WHY_NOT2/search/pdbid/%s/" % id_
 
         if input_type.data == 'pdb_redo_id':
-            path = os.path.join(self.pdbredo_root, '%s/%s/%s_final.pdb' % (id_[1:3], id_, id_))
+            path = os.path.join(self.pdbredo_root, '%s/%s/%s_final.pdb' % (id_[1:3].lower(), id_.lower(), id_.lower()))
             if not os.path.isfile(path):
                 raise ValidationError("No pdb redo entry for %s. For more info, check %s" % (id_, whynot_url))
 
         elif input_type.data == 'pdb_id':
-            path = os.path.join(self.pdb_root, "pdb%s.ent.gz" % id_)
+            path = os.path.join(self.pdb_root, "pdb%s.ent.gz" % id_.lower())
             if not os.path.isfile(path):
                 raise ValidationError("No pdb entry for %s. For more info, check %s" % (id_, whynot_url))

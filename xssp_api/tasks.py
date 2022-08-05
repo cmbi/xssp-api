@@ -37,6 +37,7 @@ def setup_logging_handler(*args, **kwargs):
     pass
 
 
+
 def _execute_subprocess(args: List[str]):
 
     _log.info("Running command '{}'".format(args))
@@ -48,6 +49,13 @@ def _execute_subprocess(args: List[str]):
     return p.stdout, p.stderr
 
 
+def should_log(exception):
+    if len(exception.output.strip()) == 0:
+        return False
+
+    return "Expected record CRYST1 but found ATOM" not in exception.output and \
+           "Error parsing PDB" not in exception.output
+
 
 @celery_app.task(bind=True)
 def mkdssp_from_pdb(self, pdb_file_path):
@@ -58,7 +66,6 @@ def mkdssp_from_pdb(self, pdb_file_path):
         output, error = _execute_subprocess(args)
         if len(output.strip()) == 0:
             raise RuntimeError(error)
-
     finally:
         _log.debug("Deleting PDB file '{}'".format(pdb_file_path))
         os.remove(pdb_file_path)
@@ -71,7 +78,7 @@ def mkhssp_from_pdb(self, pdb_file_path, output_format):
     """Creates a HSSP file from the given pdb file path."""
 
     try:
-        args = ['mkhssp', '-i', pdb_file_path]
+        args = ['mkhssp', '-i', pdb_file_path, '-a', '1', '-m', '1000']
         for d in flask_app.config['XSSP_DATABANKS']:
             args.extend(['-d', d])
 
@@ -101,6 +108,7 @@ def mkhssp_from_sequence(sequence, output_format):
     """
     # The temporary file name must end in .fasta, otherwise mkhssp assumes it's
     # a PDB file.
+
 
     sequence_id = get_identifier(sequence)
     stockholm_cache_dir = flask_app.config["HSSP_STO_CACHE"]

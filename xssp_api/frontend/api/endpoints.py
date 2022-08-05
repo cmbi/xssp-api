@@ -27,26 +27,26 @@ def create_xssp(input_type, output_type):
     'file_' format.
 
     :param input_type: Either 'pdb_id', 'pdb_redo_id', 'pdb_file' or 'sequence'.
-    :param output_type: Either 'hssp_hssp', 'hssp_stockholm', or 'dssp'.
+    :param output_type: Either 'hssp_hssp', 'hssp_stockholm', 'hg_hssp', or 'dssp'.
     :return: The id of the job.
     """
     form = XsspForm(allowed_extensions=app.config['ALLOWED_EXTENSIONS'],
-                    csrf_enabled=False)
+                    meta={'csrf': False})
     form.input_type.data = input_type
     form.output_type.data = output_type
     form.sequence.data = request.form.get('data', None)
     form.pdb_id.data = request.form.get('data', None)
     form.file_.data = request.files.get('file_', None)
-    if form.validate_on_submit():
-
+    
+    if form.validate():
         celery_id = process_request(form.input_type.data, form.output_type.data,
                                     form.pdb_id.data, request.files,
                                     form.sequence.data)
 
-        storage.insert('tasks', {'task_id': celery_id,
-                                 'input_type': input_type,
-                                 'output_type': output_type,
-                                 'created_on': datetime.datetime.utcnow()})
+        storage.insert_one('tasks', {'task_id': celery_id,
+                                    'input_type': input_type,
+                                    'output_type': output_type,
+                                    'created_on': datetime.datetime.utcnow()})
 
         return jsonify({'id': celery_id}), 202
     return jsonify(form.errors), 400

@@ -1,36 +1,37 @@
 import re
 
 from xssp_api import default_settings as settings
-from flask_wtf import Form
-from wtforms.fields import FileField, SelectField, TextAreaField, TextField
+from flask_wtf import FlaskForm
+from wtforms.fields import FileField, SelectField, TextAreaField, StringField, SubmitField
 from wtforms.validators import Regexp
 
 from xssp_api.frontend.validators import (FileExtension, NAminoAcids,
-                                          NotRequiredIfOneOf, PdbidExists)
+                                          OnlyRequiredIf, PdbidExists)
 
 
 RE_PDB_ID = re.compile(r"^[0-9a-zA-Z]{4}$")
 
 
-class XsspForm(Form):
-    input_type = SelectField(u'Input',
+class XsspForm(FlaskForm):
+
+    input_type = SelectField(u'Input', default="pdb_id",
                              choices=[('pdb_id', 'PDB code'),
                                       ('pdb_redo_id', 'PDB_REDO code'),
                                       ('pdb_file', 'PDB file'),
                                       ('sequence', 'Sequence')])
-    output_type = SelectField(u'Output',
+    output_type = SelectField(u'Output', default="dssp",
                               choices=[('dssp', 'DSSP'),
                                        ('hssp_hssp', 'HSSP'),
                                        ('hssp_stockholm', 'HSSP (Stockholm)'),
                                        ('hg_hssp', 'HSSP (Human Genome)')])
-    pdb_id = TextField(u'PDB code', [NotRequiredIfOneOf(['sequence', 'file_']),
-                                     Regexp(regex=RE_PDB_ID),
-                                     PdbidExists(settings.PDB_ROOT, settings.PDB_REDO_ROOT)])
-    sequence = TextAreaField(u'Sequence', [
-        NotRequiredIfOneOf(['pdb_id', 'file_']),
+    pdb_id = StringField(u'PDB code', validators=[OnlyRequiredIf('input_type', ['pdb_id', 'pdb_redo_id']),
+                                                  Regexp(regex=RE_PDB_ID),
+                                                  PdbidExists(settings.PDB_ROOT, settings.PDB_REDO_ROOT)])
+    sequence = TextAreaField(u'Sequence', validators=[
+        OnlyRequiredIf('input_type', ['sequence']),
         NAminoAcids(min=25)
     ])
-    file_ = FileField(u'File', [NotRequiredIfOneOf(['pdb_id', 'sequence'])])
+    file_ = FileField(u'File', validators=[OnlyRequiredIf('input_type', ['pdb_file'])])
 
     def __init__(self, allowed_extensions=None, **kwargs):
         super(XsspForm, self).__init__(**kwargs)

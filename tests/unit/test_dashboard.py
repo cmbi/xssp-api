@@ -14,6 +14,10 @@ class TestDashboard(object):
                                     'SECRET_KEY': 'testing',
                                     'WTF_CSRF_ENABLED': False,
                                     'UPLOAD_FOLDER': 'uploads',
+                                    'DSSP_ROOT': 'dssp', 'DSSP_REDO_ROOT': 'dssp_redo',
+                                    'HSSP_ROOT': 'hssp', 'HG_HSSP_ROOT': 'hg-hssp',
+                                    'HSSP_STO_ROOT': 'hssp_sto',
+                                    'PDB_ROOT': 'pdb', 'PDB_REDO_ROOT': 'pdb-redo',
                                     'ALLOWED_EXTENSIONS': ['bdb', 'bz2', 'cif',
                                                            'ent', 'gz', 'mcif',
                                                            'pdb']})

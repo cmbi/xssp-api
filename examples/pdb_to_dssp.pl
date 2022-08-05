@@ -15,13 +15,13 @@ use LWP::UserAgent;
 use JSON qw( decode_json );
 
 
-my $url_xssp = "http://www.cmbi.umcn.nl/xssp/";
+my $url_xssp = "https://www3.cmbi.umcn.nl/xssp/";
 my $ua = LWP::UserAgent->new;
 my $input = shift;
 my $output = shift;
 
 
-die "Usage: pdb_to_dssp.pl <infile> <outfile>\n" unless -f $input and \
+die "Usage: pdb_to_dssp.pl <infile> <outfile>\n" unless defined $input and \
   defined $output;
 
 

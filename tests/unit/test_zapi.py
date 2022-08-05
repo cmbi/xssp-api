@@ -1,7 +1,7 @@
 import inspect
 import json
 import re
-from io import StringIO
+from io import BytesIO
 
 from mock import patch
 from nose.tools import eq_, ok_, raises
@@ -24,7 +24,7 @@ class TestEndpoints(object):
     def test_create_xssp_pdb_file_dssp(self, mock_call):
         mock_call.return_value = 12345
         rv = self.app.post('/api/create/pdb_file/dssp/',
-                           data={'file_': (StringIO('not-real-data'),
+                           data={'file_': (BytesIO(b'not-real-data'),
                                            'fake.pdb')})
         eq_(rv.status_code, 202)
         response = json.loads(rv.data)
@@ -40,7 +40,7 @@ class TestEndpoints(object):
     def test_create_xssp_pdb_file_hssp(self, mock_call):
         mock_call.return_value = 12345
         rv = self.app.post('/api/create/pdb_file/hssp_hssp/',
-                           data={'file_': (StringIO('not-real-data'),
+                           data={'file_': (BytesIO(b'not-real-data'),
                                            'fake.pdb')})
         print(rv.data)
         eq_(rv.status_code, 202)
@@ -172,6 +172,8 @@ class TestEndpoints(object):
                 src = inspect.getsourcelines(f)
                 rx = r"@bp\.route\('([\w\/<>]*)', methods=\['([A-Z]*)']\)"
                 m = re.search(rx, src[0][0])
+                assert m is not None, "no match for {} in {}".format(rx, src[0][0])
+
                 url = m.group(1)
                 url = url.replace('>', '&gt;')
                 url = url.replace('<', '&lt;')

@@ -3,15 +3,16 @@ FROM python:3.9
 # dependencies
 RUN mkdir /deps
 RUN apt-get update ;\
-    apt-get install -y make rsync wget git g++ libbz2-dev \
+    apt-get install -y cmake make rsync wget git g++ libbz2-dev \
                        doxygen xsltproc docbook docbook-xsl docbook-xml \
                        autoconf automake autotools-dev ncbi-blast\+
 
 
 # boost
-WORKDIR /deps
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.bz2 && \
-    tar xjf boost_1_76_0.tar.bz2 && cd boost_1_76_0 && ./bootstrap.sh && ./b2 && ./b2 install
+RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.bz2 ;\
+    tar xjf boost_1_78_0.tar.bz2 -C /deps/ ;\
+    cd /deps/boost_1_78_0 ;\
+    ./bootstrap.sh && ./b2 && ./b2 install
 
 # libzeep
 RUN git clone https://github.com/mhekkel/libzeep.git /deps/libzeep ;\
@@ -39,18 +40,22 @@ WORKDIR /deps/mrc
 RUN ./configure ; make -j ; make install
 
 # libcipp
-RUN git clone https://github.com/PDB-REDO/libcifpp.git /deps/libcipp ;\
-    cd /deps/libcipp ;\
-    git checkout tags/v1.0.1
-WORKDIR /deps/libcipp
-RUN ./configure ; make -j ; make install
+RUN git clone https://github.com/PDB-REDO/libcifpp.git /deps/libcifpp ;\
+    cd /deps/libcifpp ;\
+    git checkout tags/v3.0.0
+WORKDIR /deps/libcifpp
+RUN mkdir build
+WORKDIR /deps/libcifpp/build
+RUN cmake .. && cmake --build . --config Release && ctest -C Release && cmake --install . --prefix /usr/local
 
 # dssp
 RUN git clone https://github.com/PDB-REDO/dssp.git /deps/dssp ;\
-    cd /deps/dssp ;\
-    git checkout tags/v4.0.0
+    cd /deps/dssp ; git checkout tags/v4.0.3
 WORKDIR /deps/dssp
-RUN ./configure ; make -j ; make install
+RUN mkdir build
+WORKDIR /deps/dssp/build
+RUN wget http://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/cb/1cbs.cif.gz
+RUN cmake -DCMAKE_PREFIX_PATH=/usr/local .. && cmake --build . --config Release && cmake --install . --prefix /usr/local
 
 # xssp-api
 RUN mkdir -p /usr/src/app

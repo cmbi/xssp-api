@@ -17,7 +17,7 @@ services:
       - XSSP_API_SETTINGS=/usr/src/app/prd_settings.py
       - LOG_FILENAME=/var/log/xssp_api/xssp_web.log
     volumes:
-      - "/var/log/xssp_api:/var/log/xssp_api"
+      - "/srv/data:/mnt/chelonium"
       - "/mnt/chelonium:/mnt/chelonium"
       - "/srv/xssp:/srv"
     volumes_from:
@@ -54,7 +54,7 @@ services:
       - LOG_FILENAME=/var/log/xssp_api/xssp_celery.log
     volumes:
       - "/var/log/xssp_api:/var/log/xssp_api"
-      - "/mnt/chelonium:/mnt/chelonium"
+      - "/srv/data:/mnt/chelonium"
       - "/srv/xssp:/srv"
     volumes_from:
       - data
@@ -66,7 +66,7 @@ services:
     command: ./schedule_updates.bash
     volumes:
       - "/var/log/xssp_api:/var/log/xssp_api"
-      - "/mnt/chelonium:/mnt/chelonium"
+      - "/srv/data:/mnt/chelonium"
       - "/srv/xssp:/srv"
 
   redis:
