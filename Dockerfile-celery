@@ -47,6 +47,7 @@ WORKDIR /deps/libcifpp
 RUN mkdir build
 WORKDIR /deps/libcifpp/build
 RUN cmake .. && cmake --build . --config Release && ctest -C Release && cmake --install . --prefix /usr/local
+RUN echo /usr/local > /etc/ld.so.conf.d/local.conf && ldconfig
 
 # dssp
 RUN git clone https://github.com/PDB-REDO/dssp.git /deps/dssp ;\
