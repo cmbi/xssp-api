@@ -62,7 +62,7 @@ def mkdssp_from_pdb(self, pdb_file_path):
     """Creates a DSSP file from the given pdb file path."""
 
     try:
-        args = ['mkdssp', '-i', pdb_file_path]
+        args = ['mkdssp', pdb_file_path]
         output, error = _execute_subprocess(args)
         if len(output.strip()) == 0:
             raise RuntimeError(error)
