@@ -37,6 +37,32 @@ class FileExtension(object):
             raise ValidationError(self.message)
 
 
+class OnlyAllowedIf:
+    """
+    Pass a value for a field only if another field has another specific value
+
+    raise ValidationError otherwise
+    """
+
+    def __init__(self, value, other_field_name, other_field_values):
+
+        self._value = value
+        self._other_field_name = other_field_name
+        self._other_field_values = other_field_values
+
+        self.message = "This value requires {} to be {}".format(other_field_name, ' or '.join(other_field_values))
+
+    def __call__(self, form, field):
+
+        if field.data == self._value:
+            other_field = form._fields.get(self._other_field_name)
+            if other_field is None:
+                raise Exception("No field named '{}' in form".format(self._other_field_name))
+
+            if other_field.data not in self._other_field_values:
+                raise ValidationError("{} requires {} to be {}".format(self._value, self._other_field_name, ' or '.join(self._other_field_values)))
+
+
 class OnlyRequiredIf(object):
     """
     Validate a field if and only if another field has a given value

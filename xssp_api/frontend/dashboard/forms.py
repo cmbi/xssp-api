@@ -6,7 +6,7 @@ from wtforms.fields import FileField, SelectField, TextAreaField, StringField, S
 from wtforms.validators import Regexp
 
 from xssp_api.frontend.validators import (FileExtension, NAminoAcids,
-                                          OnlyRequiredIf, PdbidExists)
+                                          OnlyRequiredIf, PdbidExists, OnlyAllowedIf)
 
 
 RE_PDB_ID = re.compile(r"^[0-9a-zA-Z]{4}$")
@@ -20,10 +20,12 @@ class XsspForm(FlaskForm):
                                       ('pdb_file', 'PDB file'),
                                       ('sequence', 'Sequence')])
     output_type = SelectField(u'Output', default="dssp",
-                              choices=[('dssp', 'DSSP'),
+                              choices=[('dssp', 'classic DSSP'),
+                                       ('mmcif', 'DSSP-annotated mmCIF'),
                                        ('hssp_hssp', 'HSSP'),
                                        ('hssp_stockholm', 'HSSP (Stockholm)'),
-                                       ('hg_hssp', 'HSSP (Human Genome)')])
+                                       ('hg_hssp', 'HSSP (Human Genome)')],
+                              validators=[OnlyAllowedIf('mmcif', 'input_type', ['pdb_file'])])
     pdb_id = StringField(u'PDB code', validators=[OnlyRequiredIf('input_type', ['pdb_id', 'pdb_redo_id']),
                                                   Regexp(regex=RE_PDB_ID),
                                                   PdbidExists(settings.PDB_ROOT, settings.PDB_REDO_ROOT)])

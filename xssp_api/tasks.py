@@ -58,11 +58,11 @@ def should_log(exception):
 
 
 @celery_app.task(bind=True)
-def mkdssp_from_pdb(self, pdb_file_path):
+def mkdssp_from_pdb(self, pdb_file_path, output_format):
     """Creates a DSSP file from the given pdb file path."""
 
     try:
-        args = ['mkdssp', pdb_file_path]
+        args = ['mkdssp', '--output-format', output_format, pdb_file_path]
         output, error = _execute_subprocess(args)
         if len(output.strip()) == 0:
             raise RuntimeError(error)
@@ -267,7 +267,7 @@ def get_task(input_type, output_type):
         else:
             raise ValueError("Invalid input and output combination")
     elif input_type == 'pdb_file':
-        if output_type == 'dssp':
+        if output_type == 'dssp' or output_type == 'mmcif':
             task = mkdssp_from_pdb
         else:
             task = mkhssp_from_pdb

@@ -68,6 +68,7 @@ class PdbIdStrategy(object):
             result = task.delay(self.pdb_id, self.output_format)
         else:
             result = task.delay(self.pdb_id)
+
         return result.id
 
 
@@ -113,8 +114,5 @@ class PdbContentStrategy(object):
         task = get_task('pdb_file', self.output_format)
         _log.debug("Calling task '{}'".format(task.__name__))
 
-        if 'hssp' in self.output_format:
-            result = task.delay(self.pdb_file_path, self.output_format)
-        else:
-            result = task.delay(self.pdb_file_path)
+        result = task.delay(self.pdb_file_path, self.output_format)
         return result.id
