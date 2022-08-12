@@ -19,6 +19,7 @@ services:
     volumes:
       - "/mnt/chelonium:/mnt/chelonium"
       - "/srv/xssp:/srv"
+      - "/var/log/xssp_api:/var/log/xssp_api"
     volumes_from:
       - data
 
@@ -53,7 +54,7 @@ services:
       - LOG_FILENAME=/var/log/xssp_api/xssp_celery.log
     volumes:
       - "/var/log/xssp_api:/var/log/xssp_api"
-      - "/srv/data:/mnt/chelonium"
+      - "/mnt/chelonium:/mnt/chelonium"
       - "/srv/xssp:/srv"
     volumes_from:
       - data
@@ -65,7 +66,7 @@ services:
     command: ./schedule_updates.bash
     volumes:
       - "/var/log/xssp_api:/var/log/xssp_api"
-      - "/srv/data:/mnt/chelonium"
+      - "/mnt/chelonium:/mnt/chelonium"
       - "/srv/xssp:/srv"
 
   redis:
