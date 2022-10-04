@@ -2,6 +2,32 @@
 <html lang="en">
 
   <head>
+    <!-- Matomo -->
+    <script>
+      var _paq = window._paq = window._paq || [];
+
+      /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+
+      _paq.push(['trackPageView']);
+
+      _paq.push(['enableLinkTracking']);
+
+      (function() {
+
+        var u="//www3.cmbi.umcn.nl/matomo/";
+
+        _paq.push(['setTrackerUrl', u+'matomo.php']);
+
+        _paq.push(['setSiteId', '1']);
+
+        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+
+        g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+
+      })();
+    </script>
+    <!-- End Matomo Code -->
+
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -88,12 +114,17 @@
       <div class="container navbar">
         <hr style='padding: 5px; margin: 0;'>
         <div class="row">
-          <div class="col-sm-3 col-md-3 col-lg-3">
+          <div class="col-sm-4 col-md-4 col-lg-4">
+            <p class="pull-right" style='color: darkgray;'>
+              Note: This website uses <a href="https://matomo.org/">Matomo</a> to analyze its usage.
+            </p>
+          </div>
+          <div class="col-sm-2 col-md-2 col-lg-2">
             <p class="pull-left" style='color: lightgray;'>
             Version: {{ g.xssp_version }}
             </p>
           </div>
-          <div class="col-sm-3 col-md-3 col-lg-3">
+          <div class="col-sm-2 col-md-2 col-lg-2">
             <p class="pull-right">
               <a style='color: darkgray;'
                href="https://github.com/cmbi/xssp-api">
@@ -101,7 +132,7 @@
               </a>
             </p>
           </div>
-          <div class="col-sm-3 col-md-3 col-lg-3">
+          <div class="col-sm-2 col-md-2 col-lg-2">
             <p class="pull-left">
               <a style='color: darkgray;'
                href="http://swift.cmbi.umcn.nl/gv/facilities/facil_2.html">
@@ -109,7 +140,7 @@
               </a>
             </p>
           </div>
-          <div class="col-sm-3 col-md-3 col-lg-3">
+          <div class="col-sm-2 col-md-2 col-lg-2">
             <p class="pull-right">
               <a style='color: lightgray;'
                href="http://swift.cmbi.umcn.nl/gv/facilities/">
