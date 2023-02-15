@@ -2,10 +2,11 @@ import re
 
 from xssp_api import default_settings as settings
 from flask_wtf import FlaskForm
-from wtforms.fields import FileField, SelectField, TextAreaField, StringField, SubmitField
-from wtforms.validators import Regexp
+from wtforms.fields import FileField, SelectField, TextAreaField, StringField, SubmitField, EmailField
+from wtforms import validators
 
 from xssp_api.frontend.validators import (FileExtension, NAminoAcids,
+                                          English, NoSpam,
                                           OnlyRequiredIf, PdbidExists, OnlyAllowedIf)
 
 
@@ -27,7 +28,7 @@ class XsspForm(FlaskForm):
                                        ('hg_hssp', 'HSSP (Human Genome)')],
                               validators=[OnlyAllowedIf('mmcif', 'input_type', ['pdb_file'])])
     pdb_id = StringField(u'PDB code', validators=[OnlyRequiredIf('input_type', ['pdb_id', 'pdb_redo_id']),
-                                                  Regexp(regex=RE_PDB_ID),
+                                                  validators.Regexp(regex=RE_PDB_ID),
                                                   PdbidExists(settings.PDB_ROOT, settings.PDB_REDO_ROOT)])
     sequence = TextAreaField(u'Sequence', validators=[
         OnlyRequiredIf('input_type', ['sequence']),
@@ -40,3 +41,12 @@ class XsspForm(FlaskForm):
         if allowed_extensions:
             file_field = self._fields.get('file_')
             file_field.validators.append(FileExtension(allowed_extensions))
+
+
+class SupportForm(FlaskForm):
+    email = EmailField('Email',
+                       [validators.DataRequired(), validators.Email()])
+    body = TextAreaField('Body', [validators.DataRequired(),
+                                  validators.Regexp('^.*[A-Za-z].*$', flags=re.MULTILINE, message="Please fill in a text message here."),
+                                  English(), NoSpam()])
+

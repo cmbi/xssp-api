@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% from "form_macros.html" import render_form_errors %}
+
+{{ render_form_errors(form) }}
+
+{% block content %}
+<div class="panel panel-default">
+    <div class="panel-body">
+        <h3>Thanks for getting in touch</h3>
+        <p>
+            We'll be in touch as soon as possible.
+        </p>
+    </div>
+</div>
+{% endblock %}

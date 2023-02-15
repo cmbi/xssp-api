@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% from "form_macros.html" import render_form_errors %}
+
+{{ render_form_errors(form) }}
+
+{% block content %}
+<div class="panel panel-default">
+    <div class="panel-body">
+        <h3>Get in touch with us</h3>
+        <p>
+            Please include the following information if your query is about a
+            report created using HOPE.
+            <ul>
+                <li>URL of the job if available</li>
+                <li>The input data and the expected output</li>
+                <li>A description of the problem</li>
+                <li>Your expectation</li>
+            </ul>
+        </p>
+        <hr>
+        <form id="support_form" method="post"
+              action="{{ url_for('dashboard.support') }}"
+              role="form" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+
+            <div class="row">
+                <div class="col-xs-12">
+                    {{ form.email(class_='form-control',
+                                  placeholder='Email address') }}
+                </div>
+            </div>
+            <div class="row" style="margin-top: 10px;">
+                <div class="col-xs-12">
+                    {{ form.body(class_='form-control', placeholder='Message',
+                                 rows='10') }}
+                </div>
+            </div>
+            <hr>
+            <div id="form_submit_div" class="form-group pull-right">
+                <button type="submit" class="btn btn-success">Send</button>
+            </div>
+            <div>
+              {% for field_name, errors in form.errors.items() %}
+                {% for error in errors %}
+                  <code class="red">{{ error }}</code>
+                {% endfor %}
+              {% endfor %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

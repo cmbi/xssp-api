@@ -6,7 +6,9 @@ from flask import (Blueprint, current_app as app, g, redirect, render_template,
 
 from xssp_api import get_version
 from xssp_api.frontend.dashboard.forms import XsspForm
+from xssp_api.frontend.dashboard.forms import SupportForm
 from xssp_api.services.xssp import process_request
+from xssp_api.services.mail import mail
 
 _log = logging.getLogger(__name__)
 
@@ -47,10 +49,26 @@ def queue():
 
 @bp.errorhandler(Exception)
 def exception_error_handler(error):  # pragma: no cover
-    _log.error("Unhandled exception:\n".format(traceback.format_exc()))
+    _log.exception(error)
     return render_template('dashboard/error.html', msg=error), 500
 
 
 @bp.before_request
 def before_request():
     g.xssp_version = get_version()
+
+@bp.route('/support/', methods=['GET', 'POST'])
+def support():
+    form = SupportForm()
+
+    if form.validate_on_submit():
+        email = form.email.data
+        body = form.body.data
+
+        mail.send("Support Request", email,
+                  [app.config["ADMINISTRATOR_EMAIL"]],
+                   body)
+
+        return render_template('dashboard/support_sent.html')
+
+    return render_template('dashboard/support.html', form=form)

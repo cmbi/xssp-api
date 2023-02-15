@@ -21,8 +21,8 @@ CELERYBEAT_SCHEDULE = {
 }
 
 # xssp
-XSSP_DATABANKS = ['/mnt/chelonium/fasta/uniprot_sprot.fasta',
-                  '/mnt/chelonium/fasta/uniprot_trembl.fasta']
+XSSP_DATABANKS = ['/mnt/chelonium/uniprot/uniprot_sprot.fasta',
+                  '/mnt/chelonium/uniprot/uniprot_trembl.fasta']
 
 # uploads
 UPLOAD_FOLDER = '/tmp/xssp-api/uploads'
@@ -40,7 +40,7 @@ HSSP_STO_CACHE = "/srv/hssp3"
 
 # Database
 MONGODB_URI = 'mongodb://xssp-api_mongo_1'
-MONGODB_DB_NAME = 'xsspapi'
+MONGODB_DB_NAME = 'xssp-api'
 
 # Blast executables
 MAKEBLASTDB = '/usr/bin/makeblastdb'
@@ -49,3 +49,7 @@ BLASTP = '/usr/bin/blastp'
 # Blast databanks
 HG_HSSP_DATABANK = '/srv/blast/hg-hssp'
 HSSP_STO_DATABANK = '/srv/blast/hssp3'
+
+# support
+ADMINISTRATOR_EMAIL = "coos.baakman@radboudumc.nl"
+MAIL_SERVER = "smtp.umcn.nl"

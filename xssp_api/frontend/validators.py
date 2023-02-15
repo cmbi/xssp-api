@@ -4,6 +4,8 @@ import os
 
 from wtforms.validators import InputRequired, StopValidation, ValidationError
 
+import langdetect
+
 
 RE_FASTA_DESCRIPTION = re.compile(r"^>\S.*\n")
 RE_SEQ = re.compile(r"^[XARNDCEQGHILKMFPSTWYVxarndceqghilkmfpstwyv]+$")
@@ -165,3 +167,19 @@ class PdbidExists(object):
             path = os.path.join(self.pdb_root, "pdb%s.ent.gz" % id_.lower())
             if not os.path.isfile(path):
                 raise ValidationError("No pdb entry for %s. For more info, check %s" % (id_, whynot_url))
+
+class English:
+    "Validate that the input is English"
+
+    def __call__(self, form, field):
+
+        if langdetect.detect(field.data) != "en":
+            raise ValidationError("Only english is allowed")
+
+class NoSpam:
+    "Check for spam"
+
+    def __call__(self, form, field):
+
+        if "deal" in field.data:
+            raise ValidationError("Spam detected")

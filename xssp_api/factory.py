@@ -125,6 +125,9 @@ def create_app(settings=None):
     if not os.path.isdir(app.config["HSSP_STO_CACHE"]):
         os.mkdir(app.config["HSSP_STO_CACHE"])
 
+    from xssp_api.services.mail import mail
+    mail.smtp_hostname = app.config["MAIL_SERVER"]
+
     return app
 
 
