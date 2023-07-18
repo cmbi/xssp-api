@@ -1,7 +1,7 @@
 import logging
 import re
 
-from jinja2 import Markup
+from markupsafe import Markup
 
 
 _log = logging.getLogger(__name__)

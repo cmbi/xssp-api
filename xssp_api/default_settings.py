@@ -5,12 +5,12 @@ from kombu import Exchange, Queue
 CELERY_TASK_SERIALIZER = 'pickle'
 CELERY_RESULT_SERIALIZER='pickle'
 CELERY_ACCEPT_CONTENT = ['pickle']
-CELERY_BROKER_URL = 'amqp://guest@xssp-api_rabbitmq_1'
+CELERY_BROKER_URL = 'amqp://guest@rabbitmq'
 CELERY_DEFAULT_QUEUE = 'xssp'
 CELERY_QUEUES = (
     Queue('xssp', Exchange('xssp'), routing_key='xssp'),
 )
-CELERY_RESULT_BACKEND = 'redis://xssp-api_redis_1/0'
+CELERY_RESULT_BACKEND = 'redis://redis/0'
 CELERY_TRACK_STARTED = True
 CELERYBEAT_SCHEDULE = {
     # Every day at midnight
@@ -39,7 +39,7 @@ PDB_REDO_ROOT = '/mnt/chelonium/pdb_redo/'
 HSSP_STO_CACHE = "/srv/hssp3"
 
 # Database
-MONGODB_URI = 'mongodb://xssp-api_mongo_1'
+MONGODB_URI = 'mongodb://mongo'
 MONGODB_DB_NAME = 'xssp-api'
 
 # Blast executables

@@ -1,11 +1,11 @@
-FROM python:3.9
+FROM python:3.11
 
 # dependencies
 RUN mkdir /deps
 RUN apt-get update ;\
-    apt-get install -y cmake make rsync wget git g++ libbz2-dev \
+    apt-get install -y cmake make rsync wget git g++ libbz2-dev libeigen3-dev zlib1g-dev \
                        doxygen xsltproc docbook docbook-xsl docbook-xml \
-                       autoconf automake autotools-dev ncbi-blast\+
+                       autoconf automake autotools-dev ncbi-blast\+ mrc
 
 
 # boost
@@ -32,26 +32,28 @@ WORKDIR /deps/hssp
 RUN aclocal ; autoheader ; automake --add-missing ; autoconf
 RUN ./configure ; make -j ; make install
 
-# mrc
-RUN git clone https://github.com/mhekkel/mrc.git /deps/mrc ;\
-    cd /deps/mrc ;\
-    git checkout tags/v1.2.3
-WORKDIR /deps/mrc 
-RUN ./configure ; make -j ; make install
-
 # libcipp
 RUN git clone https://github.com/PDB-REDO/libcifpp.git /deps/libcifpp ;\
     cd /deps/libcifpp ;\
-    git checkout tags/v3.0.0
+    git checkout tags/v5.1.0.1
+
 WORKDIR /deps/libcifpp
 RUN mkdir build
 WORKDIR /deps/libcifpp/build
 RUN cmake .. && cmake --build . --config Release && ctest -C Release && cmake --install . --prefix /usr/local
 RUN echo /usr/local > /etc/ld.so.conf.d/local.conf && ldconfig
 
+# libmcfp
+RUN git clone https://github.com/mhekkel/libmcfp /deps/libmcfp ; cd /deps/libmcfp ; git checkout tags/v1.2.4
+WORKDIR /deps/libmcfp
+RUN mkdir build
+WORKDIR /deps/libmcfp/build
+RUN cmake .. && cmake --build . && cmake --install .
+
+
 # dssp
 RUN git clone https://github.com/PDB-REDO/dssp.git /deps/dssp ;\
-    cd /deps/dssp ; git checkout tags/v4.0.3
+    cd /deps/dssp ; git checkout tags/v4.3.1
 WORKDIR /deps/dssp
 RUN mkdir build
 WORKDIR /deps/dssp/build
