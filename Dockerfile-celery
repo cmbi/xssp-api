@@ -9,7 +9,7 @@ RUN apt-get update ;\
 
 
 # boost
-RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.bz2 ;\
+RUN wget https://archives.boost.io/release/1.78.0/source/boost_1_78_0.tar.bz2 ;\
     tar xjf boost_1_78_0.tar.bz2 -C /deps/ ;\
     cd /deps/boost_1_78_0 ;\
     ./bootstrap.sh && ./b2 && ./b2 install
@@ -35,12 +35,13 @@ RUN ./configure ; make -j ; make install
 # libcipp
 RUN git clone https://github.com/PDB-REDO/libcifpp.git /deps/libcifpp ;\
     cd /deps/libcifpp ;\
-    git checkout tags/v5.1.0.1
+    git checkout tags/v7.0.9
+#    git checkout tags/v5.1.0.1
 
 WORKDIR /deps/libcifpp
 RUN mkdir build
 WORKDIR /deps/libcifpp/build
-RUN cmake .. && cmake --build . --config Release && ctest -C Release && cmake --install . --prefix /usr/local
+RUN cmake .. && cmake --build . --config Releasie && ctest -C Release && cmake --install . --prefix /usr/local
 RUN echo /usr/local > /etc/ld.so.conf.d/local.conf && ldconfig
 
 # libmcfp
@@ -57,7 +58,6 @@ RUN git clone https://github.com/PDB-REDO/dssp.git /deps/dssp ;\
 WORKDIR /deps/dssp
 RUN mkdir build
 WORKDIR /deps/dssp/build
-RUN wget http://ftp.wwpdb.org/pub/pdb/data/structures/divided/mmCIF/cb/1cbs.cif.gz
 RUN cmake -DCMAKE_PREFIX_PATH=/usr/local .. && cmake --build . --config Release && cmake --install . --prefix /usr/local
 
 # xssp-api
