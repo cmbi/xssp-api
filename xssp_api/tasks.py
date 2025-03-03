@@ -44,7 +44,7 @@ def _execute_subprocess(args: List[str]):
     p = subprocess.run(args, capture_output=True, text=True)
 
     if p.returncode != 0:
-        raise RuntimeError(f"{args} error:\n{p.stderr}")
+        _log.error(f"{args} error:\n{p.stderr}")
 
     return p.stdout, p.stderr
 
