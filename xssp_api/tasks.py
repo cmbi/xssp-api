@@ -12,7 +12,7 @@ from typing import List
 
 from filelock import FileLock
 from celery import current_app as celery_app
-from celery.signals import setup_logging, task_prerun
+from celery.signals import setup_logging, task_prerun, task_failure
 from flask import current_app as flask_app
 
 from xssp_api.frontend.validators import RE_FASTA_DESCRIPTION
@@ -37,6 +37,10 @@ def setup_logging_handler(*args, **kwargs):
     pass
 
 
+@task_failure.connect
+def task_failure_handler(task_id, exception, *args, **kwargs):
+    _log.exception(f"on task id: {task_id}")
+
 
 def _execute_subprocess(args: List[str]):
 
@@ -44,7 +48,7 @@ def _execute_subprocess(args: List[str]):
     p = subprocess.run(args, capture_output=True, text=True)
 
     if p.returncode != 0:
-        _log.error(f"{args} error:\n{p.stderr}")
+        raise RuntimeError(f"{args} error:\n{p.stderr}")
 
     return p.stdout, p.stderr
 
