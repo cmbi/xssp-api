@@ -42,6 +42,22 @@ def task_failure_handler(task_id, exception, *args, **kwargs):
     _log.exception(f"on task id: {task_id}")
 
 
+tmp_dir_path = tempfile.gettempdir()
+
+def _strip_remarks_(pdb_path: str):
+
+    if os.path.isfile(pdb_path):
+
+        tmp_path = os.path.join(tmp_dir_path, uuid.uuid4().hex + ".pdb")
+        with open(tmp_path, 'wt') as tmp_file:
+            with open(pdb_path, 'rt') as pdb_file:
+                for line in pdb_file:
+                    if not line.startswith("REMARK "):
+                        tmp_file.write(line)
+
+        shutil.move(tmp_path, pdb_path)
+
+
 def _execute_subprocess(args: List[str]):
 
     _log.info("Running command '{}'".format(args))
@@ -66,6 +82,8 @@ def mkdssp_from_pdb(self, pdb_file_path, output_format):
     """Creates a DSSP file from the given pdb file path."""
 
     try:
+        _strip_remarks_(pdb_file_path)
+
         args = ['mkdssp', '--output-format', output_format, pdb_file_path]
         output, error = _execute_subprocess(args)
         if len(output.strip()) == 0:
@@ -82,6 +100,8 @@ def mkhssp_from_pdb(self, pdb_file_path, output_format):
     """Creates a HSSP file from the given pdb file path."""
 
     try:
+        _strip_remarks_(pdb_file_path)
+
         args = ['mkhssp', '-i', pdb_file_path, '-a', '1', '-m', '1000']
         for d in flask_app.config['XSSP_DATABANKS']:
             args.extend(['-d', d])
