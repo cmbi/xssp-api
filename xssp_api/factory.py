@@ -40,24 +40,6 @@ def create_app(settings=None):
     # child loggers inherit it.
     from xssp_api import _log as xssp_logger
 
-    # Only log to email during production.
-    if not app.debug and not app.testing:  # pragma: no cover
-        mail_handler = SMTPHandler((app.config["MAIL_SERVER"],
-                                   app.config["MAIL_SMTP_PORT"]),
-                                   app.config["MAIL_FROM"],
-                                   app.config["MAIL_TO"],
-                                   "xssp-api failed")
-        mail_handler.setLevel(logging.ERROR)
-        xssp_logger.addHandler(mail_handler)
-        mail_handler.setFormatter(
-            logging.Formatter("Message type: %(levelname)s\n" +
-                              "Location: %(pathname)s:%(lineno)d\n" +
-                              "Module: %(module)s\n" +
-                              "Function: %(funcName)s\n" +
-                              "Time: %(asctime)s\n" +
-                              "Message:\n" +
-                              "%(message)s"))
-
     # Only log to the console during development and production, but not during
     # testing.
     if app.testing:
