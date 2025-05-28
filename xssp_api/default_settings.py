@@ -7,8 +7,10 @@ CELERY_RESULT_SERIALIZER='pickle'
 CELERY_ACCEPT_CONTENT = ['pickle']
 CELERY_BROKER_URL = 'amqp://guest@rabbitmq'
 CELERY_DEFAULT_QUEUE = 'xssp'
+default_exchange = Exchange('xssp', type='direct')
 CELERY_QUEUES = (
-    Queue('xssp', Exchange('xssp'), routing_key='xssp'),
+    Queue('xssp', default_exchange, routing_key='xssp'),
+    Queue('hssp', default_exchange, routing_key='hssp'),
 )
 CELERY_RESULT_BACKEND = 'redis://redis/0'
 CELERY_TRACK_STARTED = True

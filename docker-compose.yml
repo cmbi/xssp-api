@@ -9,7 +9,8 @@ services:
     depends_on:
       - mongo
       - redis
-      - celery
+      - celery-xssp
+      - celery-hssp
     command: gunicorn -k gevent -b 0.0.0.0:5002 xssp_api.application:app
     ports:
       - "5002:5002"
@@ -17,7 +18,7 @@ services:
       - XSSP_API_SETTINGS=/usr/src/app/prd_settings.py
       - LOG_FILENAME=/var/log/xssp_api/xssp_web.log
     volumes:
-      - "/mnt/chelonium:/mnt/chelonium"
+      - "/mnt/structure_data:/mnt/chelonium"
       - "/srv/xssp:/srv"
       - "/var/log/xssp_api:/var/log/xssp_api"
     volumes_from:
@@ -31,7 +32,7 @@ services:
       - mongo
       - rabbitmq
       - redis
-    command: celery -A xssp_api.application:celery beat
+    command: celery -A xssp_api.application:celery beat -Q xssp
     environment:
       - XSSP_API_SETTINGS=/usr/src/app/prd_settings.py
       - LOG_FILENAME=/var/log/xssp_api/xssp_celery.log
@@ -40,7 +41,7 @@ services:
     volumes_from:
       - data
 
-  celery:
+  celery-xssp:
     build:
       context: .
       dockerfile: Dockerfile-celery
@@ -48,13 +49,32 @@ services:
       - mongo
       - rabbitmq
       - redis
-    command: celery -A xssp_api.application:celery worker -B -n xssp.%n -c 10
+    command: celery -A xssp_api.application:celery worker -B -n xssp.%n -c 10 -Q xssp
     environment:
       - XSSP_API_SETTINGS=/usr/src/app/prd_settings.py
       - LOG_FILENAME=/var/log/xssp_api/xssp_celery.log
     volumes:
       - "/var/log/xssp_api:/var/log/xssp_api"
-      - "/mnt/chelonium:/mnt/chelonium"
+      - "/mnt/structure_data:/mnt/chelonium"
+      - "/srv/xssp:/srv"
+    volumes_from:
+      - data
+
+  celery-hssp:
+    build:
+      context: .
+      dockerfile: Dockerfile-celery
+    depends_on:
+      - mongo
+      - rabbitmq
+      - redis
+    command: celery -A xssp_api.application:celery worker -B -n hssp.%n -c 20 -Q hssp
+    environment:
+      - XSSP_API_SETTINGS=/usr/src/app/prd_settings.py
+      - LOG_FILENAME=/var/log/xssp_api/hssp_celery.log
+    volumes:
+      - "/var/log/xssp_api:/var/log/xssp_api"
+      - "/mnt/structure_data:/mnt/chelonium"
       - "/srv/xssp:/srv"
     volumes_from:
       - data
@@ -66,7 +86,7 @@ services:
     command: ./schedule_updates.bash
     volumes:
       - "/var/log/xssp_api:/var/log/xssp_api"
-      - "/mnt/chelonium:/mnt/chelonium"
+      - "/mnt/structure_data:/mnt/chelonium"
       - "/srv/xssp:/srv"
 
   redis:
@@ -74,6 +94,8 @@ services:
 
   rabbitmq:
     image: rabbitmq
+    volumes:
+      - "/srv/xssp/rabbitmq:/var/lib/rabbitmq"
 
   mongo:
     image: mongo:4.2

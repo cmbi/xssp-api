@@ -95,7 +95,7 @@ def mkdssp_from_pdb(self, pdb_file_path, output_format):
     return output
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, queue='hssp')
 def mkhssp_from_pdb(self, pdb_file_path, output_format):
     """Creates a HSSP file from the given pdb file path."""
 
@@ -120,7 +120,7 @@ def mkhssp_from_pdb(self, pdb_file_path, output_format):
         os.remove(pdb_file_path)
 
 
-@celery_app.task
+@celery_app.task(queue='hssp')
 def mkhssp_from_sequence(sequence, output_format):
     """
     Creates a HSSP file from the given sequence.
@@ -130,9 +130,9 @@ def mkhssp_from_sequence(sequence, output_format):
 
     If present, the input FASTA description line is used.
     """
+
     # The temporary file name must end in .fasta, otherwise mkhssp assumes it's
     # a PDB file.
-
 
     sequence_id = get_identifier(sequence)
     stockholm_cache_dir = flask_app.config["HSSP_STO_CACHE"]
