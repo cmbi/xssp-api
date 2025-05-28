@@ -95,7 +95,7 @@ def mkdssp_from_pdb(self, pdb_file_path, output_format):
     return output
 
 
-@celery_app.task(bind=True, queue='hssp')
+@celery_app.task(bind=True, queue='mkhssp')
 def mkhssp_from_pdb(self, pdb_file_path, output_format):
     """Creates a HSSP file from the given pdb file path."""
 
@@ -120,7 +120,7 @@ def mkhssp_from_pdb(self, pdb_file_path, output_format):
         os.remove(pdb_file_path)
 
 
-@celery_app.task(queue='hssp')
+@celery_app.task(queue='mkhssp')
 def mkhssp_from_sequence(sequence, output_format):
     """
     Creates a HSSP file from the given sequence.

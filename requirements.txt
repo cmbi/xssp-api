@@ -9,7 +9,7 @@ amqp==5.1.1
 behave==1.2.6
 billiard==3.6.4.0
 blinker==1.6.2
-celery==5.2.3
+celery==5.2.7
 coverage==4.5.4
 ecdsa==0.18.0
 gevent==23.7.0

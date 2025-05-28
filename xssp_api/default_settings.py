@@ -10,7 +10,7 @@ CELERY_DEFAULT_QUEUE = 'xssp'
 default_exchange = Exchange('xssp', type='direct')
 CELERY_QUEUES = (
     Queue('xssp', default_exchange, routing_key='xssp'),
-    Queue('hssp', default_exchange, routing_key='hssp'),
+    Queue('mkhssp', default_exchange, routing_key='mkhssp'),
 )
 CELERY_RESULT_BACKEND = 'redis://redis/0'
 CELERY_TRACK_STARTED = True

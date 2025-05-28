@@ -10,4 +10,4 @@ DEBUG_TB_INTERCEPT_REDIRECTS = False
 MAIL_SERVER = "smtp.umcn.nl"
 MAIL_SMTP_PORT = 25
 MAIL_FROM = "xssp-api@cmbi.umcn.nl"
-MAIL_TO = ["Jon.Black@radboudumc.nl", "Coos.Baakman@radboudumc.nl"]
+MAIL_TO = ["Coos.Baakman@radboudumc.nl"]
