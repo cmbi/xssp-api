@@ -154,12 +154,18 @@ def mkhssp_from_sequence(sequence, output_format):
                     _log.debug("Writing data to '{}'".format(tmp_path))
                     m = re.search(RE_FASTA_DESCRIPTION, sequence)
                     if not m:
-                        f.write('>Input\n' + sequence)
+                        f.write('>Input\n')
                     else:
                         f.write(m.group())
                         sequence = re.sub(RE_FASTA_DESCRIPTION, '', sequence)
+
                     # The fasta format recommends that all lines be less than 80 chars.
-                    f.write(textwrap.fill(sequence, 79))
+                    i = 0
+                    while i < len(sequence):
+                        j = min(i + 80, len(sequence))
+
+                        f.write(sequence[i: j] + "\n")
+                        i = j
 
                 args = ['mkhssp', '-a', '1', '-m', '1000', '-i', tmp_path]
                 for databank_path in flask_app.config['XSSP_DATABANKS']:
