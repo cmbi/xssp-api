@@ -128,25 +128,6 @@ def api_examples():
     return render_template('api/examples.html')  # pragma: no cover
 
 
-@bp.route('/queued/', methods=['GET'])
-def get_queued():
-    res = storage.find('tasks', {})
-
-    from xssp_api.tasks import get_task
-
-    tasks = []
-    for t in res:
-        task = get_task(t['input_type'], t['output_type'])
-        async_result = task.AsyncResult(t['task_id'])
-
-        tasks.append({'task_id': t['task_id'],
-                      'input_type': t['input_type'],
-                      'output_type': t['output_type'],
-                      'status': async_result.status})
-
-    return jsonify({ 'tasks': tasks })
-
-
 @bp.before_request
 def before_request():
     g.xssp_version = get_version()
